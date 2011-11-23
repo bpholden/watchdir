@@ -1,0 +1,22 @@
+Virtual environments are a way to have a clean python installation
+with all of the required dependencies.  This can be built without
+needing root access, but required dependencies can be built or
+installed in the path of the virtual environment.  Thus, when the user
+runs python, the user will have access to all required modules without
+having to worry about whether or not the system python has these files.
+
+Using a virtual environment.
+
+To run a program under the virtual environment, you will need to do the following.
+If sh or bash is not your native shell:
+
+% cd virtual_environment
+% bash
+$ source bin/activate
+$ python program.py
+
+If sh or bash is your native shell,
+
+$ cd virtual_environment
+$ source bin/activate
+$ python program.py

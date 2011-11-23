@@ -1,0 +1,43 @@
+watchdir.py relies on a directory of calibrations. This is an argument
+to watchdir and inside that directory there must be a calibration file list.
+
+* make_filelist.py
+
+Default -c . -l calibration.list
+
+To generate the filelist, use the routine make_filelist.py.
+This routine requires two arguments, the imput directory of calibrations and the filename of the output.
+
+% make_filelist.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/
+
+which will create the file calibration.list in the above directory
+To make a calibration list with a different name, use the -l option
+
+% make_filelist.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l new.list
+
+
+* prep_dirs.py
+
+Default -c . -l calibration.list
+
+The next step is to make the appropriate subdirectories.  This breaks
+out each of the calibration files into an appropriate subdirectory.
+These will contain files all taken in the same configuration and
+camera. 
+
+% prep_dirs.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l calibration.list
+
+
+* reduce_calibrations.py
+
+Default -c . -l calibration.list
+
+This routine runs through the directories make by prep_dirs.py.  In
+each subdirectory, the script makes a plan.par file which is used as
+input for XIDL.  Running xidl's "long_reduce" in the subdirectory will
+process these files.  These files are then used in conjunction with
+the standard star observations to construct a sensitivity curve by
+watchdir.py.  The script builds a csh script to automate the IDL
+processing.
+
+% reduce_calibrations.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l calibration.list
