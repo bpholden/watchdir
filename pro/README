@@ -1,0 +1,8 @@
+Contained are the IDL files for taking the output of a standard
+reduction and, in the end, producing a set of web pages showing the
+throughput of instruments as a function of dispersive element, date
+and wavelength.
+
+The LRIS and DEIMOS directories are for the respective instruments.
+The DEIMOS one contains Greg Wirth's code.  The LRIS one contains Brad
+Holden's adaptation of Greg's code.

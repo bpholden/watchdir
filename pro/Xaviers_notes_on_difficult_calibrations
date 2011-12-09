@@ -1,0 +1,170 @@
+==========================================
+==========================================
+==========================================
+g1200_7500
+==========================================
+
+  *******************************
+  w7000
+     ;; Almost no lines on lower half of chip     
+     ;; Probably not enough lamps on (no Neon)
+     ;; Not worth calibrating
+
+  *******************************
+  w8000
+     ;; Sparse lines (overall), but probably fine
+     ;; Again, no Neon
+     ;; Good solution
+
+IDL>  long_reduce, 'plan_g1200_7500_8000.par', arc_inter=2
+IDL> restore, 'wave-r110118_0178.sav'
+IDL> calib = xfit[0]
+IDL> archive_arc = arc1d[*,0]
+IDL> save, calib, archive_arc, filename='lris_red_1200_7500_Ar.sav'
+
+IDL>  long_reduce, 'plan_g1200_7500_8000.par',  REID_FILE='lris_red_1200_7500_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+
+  ;; Successful
+
+********************************
+  w9000
+     ;; Sparse lines (8 total) ;  not ideal
+     ;; Again, no Neon
+
+IDL>  long_reduce, 'plan_g1200_7500_9000.par', arc_inter=2
+IDL>  long_addtoarchive, 'wave-r110118_0182.sav', 'lris_red_1200_7500_d560_Ar.sav'
+IDL>  long_reduce, 'plan_g1200_7500_9000.par',  REID_FILE='lris_red_1200_7500_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+
+  ;; Successful
+
+********************************
+  w10000
+     ;; Very sparse lines (5 total) ;  not ideal
+     ;; Again, Ar only
+     ;; I don't trust my ID's enough to include this...
+
+==========================================
+==========================================
+==========================================
+g900_5500
+==========================================
+
+  *******************************
+  w6000
+     ;; Too few lines for a calibration
+
+  *******************************
+  w7999
+     ;; Fine, but not great
+     ;; Looks like Ar-only again
+
+
+IDL>  long_reduce, 'plan_g900_5500_7999.par', arc_inter=2
+   ; Good solution, although code preferred to toss 7723.760
+
+IDL> restore, 'wave-r110122_0221.sav'
+IDL> calib = xfit[0]
+IDL> archive_arc = arc1d[*,0]
+IDL> save, calib, archive_arc, filename='lris_red_900_5500_d560_Ar.sav'
+
+IDL>  long_reduce, 'plan_g900_5500_7999.par',  REID_FILE='lris_red_900_5500_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+  ;; Success
+
+  *******************************
+  w10000
+     ;; 8 lines;  might just be enough
+     ;; Saving until I've done the 600 grating
+
+IDL>  long_reduce, 'plan_g900_5500_10000.par',  REID_FILE='lris_red_900_5500_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1., arc_inter=2
+
+IDL>  long_addtoarchive, 'wave-r110122_0225.sav', 'lris_red_900_5500_d560_Ar.sav'
+
+IDL>  long_reduce, 'plan_g900_5500_10000.par',  REID_FILE='lris_red_900_5500_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+  ;; Success
+
+==========================================
+==========================================
+==========================================
+g831_8200  (D560 dicrhoic)
+==========================================
+
+  *******************************
+  w6001
+     ;; Ne lamp is on
+
+IDL>  long_reduce, 'plan_g831_8200_6001.par' , arc_inter=1
+IDL>  long_addtoarchive, 'wave-r101216_0075.sav', 'lris_red_831_8200.sav'
+IDL>  long_reduce, 'plan_g831_8200_6001.par' 
+  ;; Success
+
+  *******************************
+  w8001
+     ;; Removed the December arc
+     ;; Ar only
+
+IDL>  long_reduce, 'plan_g831_8200_8001.par'
+   ;; Success
+
+restore, 'wave-r110118_0114.sav'
+calib = xfit[1]
+archive_arc = arc1d[*,1]
+save, calib, archive_arc, filename='lris_red_831_8200_d560_Ar.sav'
+
+IDL>  long_reduce, 'plan_g831_8200_8001.par', REID_FILE='lris_red_831_8200_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+   ;; Even better
+
+  *******************************
+  w10000
+     ;; Removed the December arc
+     ;; Ar only
+
+IDL>  long_reduce, 'plan_g831_8200_10000.par'
+  ;; Too much scatter
+IDL>  long_reduce, 'plan_g831_8200_10000.par', arc_inter=1
+IDL>  long_addtoarchive, 'wave-r110118_0118.sav', 'lris_red_831_8200_d560_Ar.sav'
+
+
+==========================================
+==========================================
+==========================================
+g600_10000
+==========================================
+
+  *******************************
+  w5999
+     ;; Almost no lines on lower half of chip     
+     ;; Not worth calibrating
+
+  *******************************
+  w8000
+     ;; Enough lines, although none in far blue
+
+IDL>  long_reduce, 'plan_g600_10000_8000.par', arc_inter=2
+   ; Good 
+
+IDL> restore, 'wave-r110118_0154.sav'
+IDL> calib = xfit[0]
+IDL> archive_arc = arc1d[*,0]
+IDL> save, calib, archive_arc, filename='lris_red_600_10000_d560_Ar.sav'
+
+IDL>  long_reduce, 'plan_g600_10000_8000.par',  REID_FILE='lris_red_600_10000_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+  ;; Success
+
+  *******************************
+  w10000
+     ;; 8 lines;  might just be enough
+
+IDL>  long_reduce, 'plan_g600_10000_10000.par',  REID_FILE='lris_red_600_10000_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1., arc_inter=1
+
+IDL>  long_addtoarchive, 'wave-r110118_0158.sav', 'lris_red_600_10000_d560_Ar.sav'
+
+IDL>  long_reduce, 'plan_g600_10000_10000.par',  REID_FILE='lris_red_600_10000_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1.
+  ;; Good, albeit only a few lines
+
+;; Trying to get a few more lines in there
+IDL>  long_reduce, 'plan_g600_10000_10000.par',  REID_FILE='lris_red_600_10000_d560_Ar.sav', LINELIST='lris_red_1200_noNe.lst', BIN_RATIO=1., arc_inter=1
+
+IDL> restore, 'lris_red_600_10000_d560_Ar.sav', /verb
+calib[1] = calib[2]
+archive_arc[*,1] = archive_arc[*,2]
+save, calib, archive_arc, filename='lris_red_600_10000_d560_Ar.sav'

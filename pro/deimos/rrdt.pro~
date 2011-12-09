@@ -1,0 +1,8 @@
+gratenam='830G'
+targname='BD+28 4211'
+;; dwfilnam='GG400'
+;; wavelen=5500
+;; run_review_deimos_throughput, GRATENAM=gratenam, targname=targname, $
+;;  WAVELEN=wavelen, DWFILNAM=dwfilnam, /test
+run_review_deimos_throughput, GRATENAM=gratenam, targname=targname
+end
