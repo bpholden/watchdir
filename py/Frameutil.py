@@ -189,7 +189,7 @@ def ingestframe(filename,path,datapath):
             failure = genframepath(datapath,relpath)
 
         except:
-            msg = "There is some horrid error in the system and the path for this file cannot be made.  Please contact the administrator." 
+            msg = "There is some horrid error in the system and the path %s for this file cannot be made.  Please contact the administrator."  % (os.path.join(datapath,relpath))
             print msg
             return(msg,False)
         
