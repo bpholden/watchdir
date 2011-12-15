@@ -348,11 +348,10 @@ def run_sensstd(plan,datapath,idlenv):
     if not os.environ.has_key('LRIS_THRU'):
         os.environ['LRIS_THRU'] = datapath
     
-
     stdfile = os.path.join(outputpath,stdfile)
     try:
         hdu = pyfits.open(stdfile)
-        sens_str = lrissenstd_str(stdframe,select_spec(stdframe,hdu))
+        sens_str = lrissenstd_str(stdfile,select_spec(stdframe,hdu))
         executable = writesens_str(plan,stddir,sens_str,idlenv)
 
         cwd = os.path.dirname(executable)
