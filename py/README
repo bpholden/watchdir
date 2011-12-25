@@ -71,3 +71,16 @@ installation of python.
 
 Please see the short file Running_with_a_virtualenv for more
 information.
+
+Unit Tests
+
+test_run_spec.py and test_run_sens.py test various functions in the
+specified modules.  Both rely on the configuration in test_setup.py.
+That file specifies the test files and test directories.  test_data/
+contains the input files and will contain the output after testing.  
+
+If the tests work, the code will simply print to the screen "success
+in" followed by the function name.  Failure will be noted by "failed
+in " followed by the function name and the output of the function that
+failed.
+

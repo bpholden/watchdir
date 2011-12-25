@@ -1,0 +1,59 @@
+IDL Version 6.3, Mac OS X (darwin i386 m32). (c) 2006, Research Systems, Inc.
+Installation number: 207564-32.
+Licensed for use by: University of California
+
+% Compiled module: LRIS_SENSSTD.
+% Compiled module: X_CHKFIL.
+% Compiled module: XHEADFITS.
+% Compiled module: HEADFITS.
+% Compiled module: FXPOSIT.
+% Compiled module: MRD_HREAD.
+% Compiled module: SXPAR.
+% Compiled module: X_GETMONTH.
+% Compiled module: THRUSTRCT__DEFINE.
+% Compiled module: STRSPLIT.
+% Compiled module: GETTOK.
+% Compiled module: X_PADSTR.
+% Compiled module: X_RADEC.
+% Compiled module: AIRMASS.
+% Compiled module: X_STDCALIBFIL.
+% Compiled module: GCIRC.
+% Compiled module: XMRDFITS.
+% Compiled module: MRDFITS.
+% Compiled module: FXMOVE.
+% Compiled module: FXPAR.
+% Compiled module: VALID_NUM.
+% Compiled module: MRD_SKIP.
+% Compiled module: MATCH.
+% Compiled module: MRD_STRUCT.
+% Compiled module: IS_IEEE_BIG.
+% Compiled module: IEEE_TO_HOST.
+lris_sensstd: Using object --        3
+lris_sensstd: Using the calibration file: g191b2b_005.fits
+MRDFITS: Binary table.  5 columns by  5108 rows.
+% Compiled module: X_CONSTANTS.
+% Compiled module: X_SETFITSTRCT.
+% Compiled module: FITSTRCT__DEFINE.
+% Compiled module: LINTERP.
+% Compiled module: ZPARCHECK.
+% Compiled module: TABINV.
+% Compiled module: X_FITREJ.
+% Compiled module: X_FIT.
+% Compiled module: FUNC_FIT.
+% Compiled module: FLEGENDRE.
+% Compiled module: DELVARX.
+% Compiled module: DJS_REJECT.
+% Compiled module: X_CALCFIT.
+% Compiled module: LONG_EXTINCT.
+% Compiled module: READCOL.
+% Compiled module: NUMLINES.
+% Compiled module: REMCHAR.
+% Compiled module: STRNUMBER.
+% Compiled module: INTERPOL.
+% Compiled module: X_INITKECK.
+% Compiled module: TELESTRUCT__DEFINE.
+% Compiled module: MWRFITS.
+% Compiled module: FXADDPAR.
+% Compiled module: DETABIFY.
+% Compiled module: FXPARPOS.
+% Compiled module: HOST_TO_IEEE.
