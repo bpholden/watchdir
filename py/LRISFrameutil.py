@@ -135,6 +135,8 @@ def addframelris(frame,hdr,instrument):
 
         if re.search(r'LONG',frame.aperture):
             frame.wavelength =  float("%0.1f" % setval(hdr,'WAVELEN',hdrkeys,-9999))
+        if re.search(r'long',frame.aperture):
+            frame.wavelength =  float("%0.1f" % setval(hdr,'WAVELEN',hdrkeys,-9999))
         elif re.search(r'direct',frame.aperture):
             frame.wavelength =  float("%0.1f" % setval(hdr,'WAVELEN',hdrkeys,-9999))
         else:

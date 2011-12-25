@@ -19,18 +19,20 @@ import stat
 def linkreduced(calib,plan,prefix,datapath):
     reducedname = prefix + calib.name
 
-    zipped = re.search("fits\.gz",reducedname)
-    if zipped:
-        reducedname = re.sub("\.gz","",reducedname)
-
-    match = re.search("wave",prefix)
+    zipped = re.search("\.gz",calib.name)
+    match = re.match("wave",prefix)
+    fullreducedname =  os.path.join(calib.path,reducedname)
+        
     
-    if os.path.isfile(os.path.join(calib.path,reducedname)) and not os.path.isfile(os.path.join(datapath,plan.finalpath,reducedname)):
-        os.link(os.path.join(calib.path,reducedname),os.path.join(datapath,plan.finalpath,reducedname))
+    if os.path.isfile(fullreducedname) and not os.path.isfile(os.path.join(datapath,plan.finalpath,reducedname)):
+        os.link(fullreducedname,os.path.join(datapath,plan.finalpath,reducedname))
         if match:
-            reducedname = re.sub("\.fits",".sav",reducedname)
+            if zipped:
+                reducedname = re.sub("\.fits.gz",".sav",reducedname)
+            else:
+                reducedname = re.sub("\.fits",".sav",reducedname)
             if os.path.isfile(os.path.join(calib.path,reducedname)) and not os.path.isfile(os.path.join(datapath,plan.finalpath,reducedname)):
-                os.link(os.path.join(calib.path,reducedname),os.path.join(datapath,plan.finalpath,reducedname))
+                    os.link(os.path.join(calib.path,reducedname),os.path.join(datapath,plan.finalpath,reducedname))
         return(True)
     else:
         return(False)
@@ -61,14 +63,11 @@ def find_calibframes(frame,plan,calibs,datapath):
         matchs += flats
     else:
         msg = "No flats for frame %s" % (frame.display_name)
-        matchs = False
-    if len(arcs) and len(matchs):
+    if len(arcs):
         matchs += arcs
-    elif len(arcs) == 0:
+    else :
         msg = msg  + "\n" + "No arcs for frame %s" % (frame.display_name)
-        matchs= False
-    else:
-        matchs= False
+
         
     return(matchs,msg)
 
@@ -146,7 +145,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     if not frame:
         return(False,msg,False)
 
-    # first, we check to see if the input file is in the allowed list
+    # second, we check to see if the input file is in the allowed list
     msg = check_if_std_frame(frame,stars)
     if msg:
         # crap - at this point we have already moved the to stddir
@@ -156,7 +155,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
 
 
     pipeline = find_pipeline(frame,pipelines);
-    # given the frame, we make the plan file
+    # given an acceptable frame, we make the plan file
     planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
     plan = Planutil.buildplan(frame,planname,stddir,pipeline)
     plan.frames.append(frame)
@@ -166,10 +165,10 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     if not calframes:
         return(False,msg)        
     plan.frames += calframes
-
+    # update with calibration data frames and write out the plan file
     plan = Planutil.updateplandata(plan,frame,stddir)
     executable = writeplan(plan,stddir,idlenv)
-
+    # actually run the pipeline
     cwd = os.path.dirname(executable)
     outputfile = open(os.path.join(cwd,'processoutput'),"wb")
     erroroutputfile = open(os.path.join(cwd,'processerroroutput'),"wb")

@@ -166,13 +166,13 @@ class Instrument(object):
 class Pipeline(object):
 
 
-    def __init__(self,display_name,runstr):
+    def __init__(self,display_name,runstr,instrument,framelist):
 
         self.display_name = display_name
         self.runstr = runstr
     
-        self.instrument = ()
-        self.framelist = ""
+        self.instrument = instrument
+        self.framelist = framelist
 
     def __repr__(self):
         return '%s' % (self.display_name)

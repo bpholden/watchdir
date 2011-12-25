@@ -54,11 +54,11 @@ def lrissenstd_str(stdfile,stdframe,spec):
 
     sens_str = 'echo "lris_sensstd,'
     sens_str += "'%s'" % (stdfile)
-    sens_str += ', CLOBB=1,'
+    sens_str += ', CLOBBER=1,'
     if stdframe.instrument.name == "lrisblue":
-        sens_str += " WVTIME=[3500., 4500., 5500.], STD_OBJ=%d" % (spec)
+        sens_str += " STD_OBJ=%d" % (spec)
     else:
-        sens_str += " WVTIME=[6000., 7000., 8000., 9000., 10000.], STD_OBJ=%d" % (spec)
+        sens_str += " STD_OBJ=%d" % (spec)
     sens_str += '" | $IDL_DIR/bin/idl >& sens.log'
     sens_str += "\n"
 
