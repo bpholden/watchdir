@@ -7,7 +7,7 @@ import os, os.path
 import re
 import datetime
 
-idlenv = "~/.idlenv"
+idlenv = "test_data/idlenv"
 testfile = "r101216_0093.fits.gz"
 stdfile = "std-r101216_0093.fits.gz"
 testfiledir = "r101216_0093"

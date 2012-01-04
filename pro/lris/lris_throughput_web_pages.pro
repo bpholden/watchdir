@@ -71,13 +71,21 @@ pro lris_throughput_web_pages, CLOBBER=clobber, TEST=test
 lambda_eff = [4000, 5000., 7000., 8500., 9500.]
 dlambda_eff = [500, 500., 500., 500., 500.]
 efficiency = fltarr(n_elements(lambda_eff))
-
+STOP
 ;; build list of directories...
 caldir = getenv('LRIS_THRU')
 if caldir eq '' then message, 'LRIS_THRU envar not defined'
+caldirs = file_search(caldir,count=ndir)
+if ndir eq 0 then begin
+   message, 'no directory '+caldir+' Reset LRIS_THRU environment variable and rerun'
+   return 
+endif
+
 subdirs = ['b300_5000','b400_3400','b600_4000','b1200_3400','r150_7500','r300_5000', $
            'r400_8500','r600_5000','r600_7500','r600_10000','r831_8200','r900_5500', $
            'r1200_7500']
+
+usedirs = intarr(size(subdirs,/n_elements))
 
 ;; check for test mode...
 if keyword_set(TEST) then subdirs = ['test']
@@ -126,6 +134,7 @@ summary = { efficiency_current_plot:'', $
             eff_vs_time_bintab:''}
 
 ;; loop over directories (gratings)...
+ng = 0
 ndirs = n_elements(subdirs)
 for i=0,ndirs-1 do begin
 
@@ -141,7 +150,7 @@ for i=0,ndirs-1 do begin
         message, 'no files in subdir '+subdir, /info
         continue
     endif 
-
+    usedirs[i] = 1
     ;; create output directory as needed...
     outdir = subdir + '/doc'
     if ~ file_test( outdir, /dir) then file_mkdir, outdir
@@ -227,13 +236,17 @@ for i=0,ndirs-1 do begin
 ;      FIG_EFF=params[nfiles-1].fig_eff, $
 ;      FIG_ZP_ANG=params[nfiles-1].fig_zp_ang
 ;;;      FIG_TIME=fig_time
-
 endfor 
-
+fulldirs = where(usedirs,nusedirs)
+if nusedirs eq 0 then begin
+   message, 'No grating or grism directories contain output of lris_sensstd.'
+   return
+endif 
+STOP
 ;; lris_throughput_master_plot
 outfile = getenv('LRIS_THRU')+'/index.html'
-gratings = subdirs
-href = subdirs + '/doc/index.html'
+gratings = subdirs[fulldirs]
+href = subdirs[fulldirs] + '/doc/index.html'
 lris_throughput_master_web_page, outfile, gratings, href
 
 end
