@@ -10,6 +10,26 @@ def find_dirs(filelist):
         if os.path.isdir(cfile):
             dirs.append(cfile)
     return(dirs)
+
+
+def makeplanflags(filename):
+
+    planflags = dict()
+    try:
+        flagfile = open(filename)
+    except:
+        print "WARNING: %s not found, proceeding with no additional flags for XIDL"
+        return(planflags)
+
+    flagstrs = flagfile.read().splitlines()
+    for fstr in flagstrs:
+        (grating,binning,flag) = fstr.split()
+        # let us assume the correct format
+        fkey = "%s %s"  % (grating,binning)
+        planflags[fkey] = flag
+
+
+    return(planflags)
         
 def makecallist(callist,caldir,stddir):
 
@@ -54,7 +74,29 @@ def makecallist(callist,caldir,stddir):
     
     return(calframes)
 
+def gen_planrun(cwd,caldir,planflags):
 
+    planflagstr = ""
+    for k in planflags.keys():
+        planflagstr += ",%s" % planflags[k]
+
+    runstrs= []
+    runstrs.append("cd %s\n" % cwd)
+    runstrs.append('echo "long_reduce,\'plan.par\'%s" | $IDL_DIR/bin/idl \n' % planflagstr)
+    runstrs.append("cd %s\n" % caldir)
+    return(runstrs)
+    
+
+def gen_planflags(dir,calibs,flagdict):
+    planflags=dict()
+    fitsfiles = glob.glob(dir + "/*.fits*")
+    for fitsfile in fitsfiles:
+        for calib in calibs:
+            if calib.name in fitsfile:
+                fkey = "%s %s"  % (calib.grating,calib.ybinning)
+                if fkey in flagdict.keys():
+                    planflags[fkey] = flagdict[fkey]
+    return planflags
 
 def write_plan(dir,calibs):
     fitsfiles = glob.glob(dir + "/*.fits*")
@@ -92,6 +134,9 @@ def write_plan(dir,calibs):
         planfile = open(os.path.join(dir,"plan.par"),"w")
         planfile.write(hdrblock)
 
+
+        # note  - I just ASSUME that the files are all the same.
+
         for fitsfile in fitsfiles:
             for calib in calibs:
                 if calib.name in fitsfile:
@@ -112,6 +157,10 @@ parser.add_option('-c','--caldir', dest='caldir', action='store',type="string",d
 parser.add_option('-l','--callist', dest='callist', action='store',
                    default="calibration.list",type="string",
                    help='File in calibration directory containing list of calibrations')
+parser.add_option('-f','--flagfile', dest='flagfile', action='store',
+                   default="calibration.flags",type="string",
+                   help='File in calibration directory containing flags for running XIDL, a version can be found in the source directory')
+
 #parser.add_option('-m','--maxjobs', dest='maxjobs', action='store',
 #                   default=1,type="int",
 #                   help="Maximum number of jobs to run at once.")
@@ -122,9 +171,10 @@ parser.add_option('-l','--callist', dest='callist', action='store',
 
 caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use this later for path manipulations
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
+flagfile = os.path.abspath(os.path.join(options.caldir,options.flagfile)) # get the absolute path - so we can use this later for path manipulations
 
 calibs = makecallist(callist,caldir,".")
-
+flagdict = makeplanflags(flagfile)
 
 rdirs = find_dirs(glob.glob(os.path.join(caldir,"r*_*")))
 bdirs = find_dirs(glob.glob(os.path.join(caldir,"b*_*")))
@@ -140,16 +190,17 @@ idlrunfile = open(os.path.join(caldir,"run_idl.csh"),"w")
 
 for gdir in gdirs:
     cwd = os.path.join(".",gdir)
-    nfiles = write_plan(gdir,calibs)
-    if nfiles:
-        idlrunfile.writelines( ["cd "+cwd+'\n','echo \"long_reduce\" | $IDL_DIR/bin/idl  \n','cd '+caldir + '\n'])
+    #    nfiles = write_plan(gdir,calibs)
+    # if nfiles:
+    #    idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
     wdirs = glob.glob(gdir+"/w*")
     for wdir in wdirs:
 #        execstr = 'echo \"long_plan\" | $IDL_DIR/bin/idl'
         cwd = os.path.join(".",wdir)
         nfiles = write_plan(wdir,calibs)
+        planflags = gen_planflags(wdir,calibs,flagdict)
         if nfiles:
-            idlrunfile.writelines( ["cd "+cwd+'\n','echo \"long_reduce\" | $IDL_DIR/bin/idl  \n','cd '+caldir + '\n'])
+            idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
     
 
 idlrunfile.close()

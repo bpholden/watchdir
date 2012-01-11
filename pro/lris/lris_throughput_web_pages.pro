@@ -73,6 +73,7 @@ dlambda_eff = [500, 500., 500., 500., 500.]
 efficiency = fltarr(n_elements(lambda_eff))
 STOP
 ;; build list of directories...
+rootoutdir = getenv('LRIS_WEB')
 caldir = getenv('LRIS_THRU')
 if caldir eq '' then message, 'LRIS_THRU envar not defined'
 caldirs = file_search(caldir,count=ndir)
@@ -142,7 +143,7 @@ for i=0,ndirs-1 do begin
     message, 'processing subdirectory '+grating, /info
 
     ;; get list of files in directory...
-    subdir = getenv('LRIS_THRU')+'/'+grating
+    subdir = caldir+'/'+grating
     files = file_search( subdir, 'sens*.fits*', count=nfiles)
 
     ;; no files ==> go to next subdir...
@@ -152,7 +153,7 @@ for i=0,ndirs-1 do begin
     endif 
     usedirs[i] = 1
     ;; create output directory as needed...
-    outdir = subdir + '/doc'
+    outdir = rootoutdir + '/'+grating + '/doc'
     if ~ file_test( outdir, /dir) then file_mkdir, outdir
 
     ;; Sort by date
@@ -219,7 +220,7 @@ for i=0,ndirs-1 do begin
 
     ;; generate grating summary page...
     extn = '.html'
-    outfile = outdir + '/index.html'
+    outfile = rootoutdir + '/index.html'
     if keyword_set(VERBOSE) then begin
         message, 'creating summary page '+outfile, /in
     endif 
@@ -244,7 +245,7 @@ if nusedirs eq 0 then begin
 endif 
 STOP
 ;; lris_throughput_master_plot
-outfile = getenv('LRIS_THRU')+'/index.html'
+outfile = outdir +'/index.html'
 gratings = subdirs[fulldirs]
 href = subdirs[fulldirs] + '/doc/index.html'
 lris_throughput_master_web_page, outfile, gratings, href
