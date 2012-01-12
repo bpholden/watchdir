@@ -163,7 +163,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     # to find matching calibrations
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
     if not calframes:
-        return(False,msg)        
+        return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
     plan = Planutil.updateplandata(plan,frame,stddir)
