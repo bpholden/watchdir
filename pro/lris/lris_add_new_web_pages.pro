@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------------
-pro lris_throughput_web_pages, CLOBBER=clobber, TEST=test
+pro lris_add_new_web_pages, gratingdir, sensfunc, CLOBBER=clobber, TEST=test
 ;-----------------------------------------------------------------------
 ;+
 ; NAME:
@@ -71,8 +71,13 @@ pro lris_throughput_web_pages, CLOBBER=clobber, TEST=test
 lambda_eff = [4000, 5000., 7000., 8500., 9500.]
 dlambda_eff = [500, 500., 500., 500., 500.]
 efficiency = fltarr(n_elements(lambda_eff))
+subdirs = ['b300_5000','b400_3400','b600_4000','b1200_3400','r150_7500','r300_5000', $
+           'r400_8500','r600_5000','r600_7500','r600_10000','r831_8200','r900_5500', $
+           'r1200_7500']
+usedirs = intarr(size(subdirs,/n_elements))
+
 STOP
-;; build list of directories...
+
 rootoutdir = getenv('LRIS_WEB')
 caldir = getenv('LRIS_THRU')
 if caldir eq '' then message, 'LRIS_THRU envar not defined'
@@ -82,11 +87,15 @@ if ndir eq 0 then begin
    return 
 endif
 
-subdirs = ['b300_5000','b400_3400','b600_4000','b1200_3400','r150_7500','r300_5000', $
-           'r400_8500','r600_5000','r600_7500','r600_10000','r831_8200','r900_5500', $
-           'r1200_7500']
+caldir = caldir + "/" + gratingdir ; now search for input grating directory
+caldirs = file_search(caldir,count=ndirs)
+if ndir eq 0 then begin
+   message, 'no directory '+caldir+' Reset LRIS_THRU environment variable or check for existence of '+gratingdir+' and rerun'
+   return 
+endif
 
-usedirs = intarr(size(subdirs,/n_elements))
+   
+
 
 ;; check for test mode...
 if keyword_set(TEST) then subdirs = ['test']
@@ -136,96 +145,106 @@ summary = { efficiency_current_plot:'', $
 
 ;; loop over directories (gratings)...
 ng = 0
-ndirs = n_elements(subdirs)
-for i=0,ndirs-1 do begin
 
-    grating = subdirs[i]
-    message, 'processing subdirectory '+grating, /info
+message, 'processing subdirectory '+gratingdir, /info
 
-    ;; get list of files in directory...
-    subdir = caldir+'/'+grating
-    files = file_search( subdir, 'sens*.fits*', count=nfiles)
+;; get list of files in directory...
 
-    ;; no files ==> go to next subdir...
-    if nfiles eq 0 then begin
-        message, 'no files in subdir '+subdir, /info
-        continue
-    endif 
-    usedirs[i] = 1
-    ;; create output directory as needed...
-    outdir = rootoutdir + '/'+grating + '/doc'
-    if ~ file_test( outdir, /dir) then file_mkdir, outdir
+newfiles = file_search( caldir, sensfunc, count=nnew)
+files = file_search( caldir, 'sens_*.fits', count=nfiles)
 
-    ;; Sort by date
-    all_dates = dblarr(nfiles)
-    all_grating = strarr(nfiles)
-    for jj=0L,nfiles-1 do begin
-        meta = xmrdfits(files[jj],1, /silent)
-        ;; Convert to Julian
-        all_dates[jj] = x_setjdate(meta.date)
-        all_grating[jj] = strtrim(meta.grating,2)
+;; no files ==> go to next subdir...
+if nnew eq 0 then begin
+   message, 'no file '+sensfunc+' in subdir '+subdir, /info
+   return
+endif 
 
-    endfor
+newoutdir = 0
+;; create output directory as needed...
+;; note - will also have to remake master web page if this is the case
+outdir = rootoutdir + '/'+grating + '/doc'
+if ~ file_test( outdir, /dir) then begin 
+   file_mkdir, outdir
+   newoutdir = 1 ; This means that we will have to rebuild the master page
+   for nsub = 0, size(subdirs,/n_elements)-1 do begin
+      csubdir = outdir = rootoutdir + '/'+subdirs[nsub] + '/doc'
+      if ~ file_test( csubdir, /dir) then usedirs[nsub] = 1
+   endfor
+endif
 
-    ;; verify that all files in here belong to just one grating...
-    uni = uniq(all_grating)
-    if n_elements(uni) GT 1 then begin
-        message, 'directory '+subdir+' contains files from different gratings!', /inf
-        continue
-    endif
+;; Sort by date
+all_dates = dblarr(nfiles)
+all_grating = strarr(nfiles)
+for jj=0L,nfiles-1 do begin
+   meta = xmrdfits(files[jj],1, /silent)
+   ;; Convert to Julian
+   all_dates[jj] = x_setjdate(meta.date)
+   all_grating[jj] = strtrim(meta.grating,2)
+endfor
 
-    ;; sort files into order from newest to oldest...
-    order = reverse(sort(all_dates))
-    files = files[order]
+new_dates = dblarr(nnew)
+meta = xmrdfits(newfiles[0],1,/silent)
+new_dates[0] = x_setjdate(meta.date)
 
-    ;; generate structure to hold data...
-    params = replicate({PARAMS}, nfiles)
+uni = uniq(all_grating)
+if n_elements(uni) GT 1 then begin
+   message, 'directory '+subdir+' contains files from different gratings!', /inf
+   return
+endif
 
-    ;; intialize params...
-    params.infile = files
-    for jj=0L,nfiles-1 do begin
-        params[jj].lambda_eff  = lambda_eff
-        params[jj].dlambda_eff = dlambda_eff
-        params[jj].jd = all_dates[jj]
-    endfor
 
-    ;; generate plots...
-    lris_throughput_grating_plots, params, fig_time, OUTDIR=outdir, $
-      CLOBBER=clobber
+;; generate structure to hold data...
+params = replicate({PARAMS}, nfiles)
 
-    ;; generate detail pages...
-    extn = '.html'
-    for jj=0L,nfiles-1 do begin
+;; intialize params...
+params.infile = files
+for jj=0L,nfiles-1 do begin
+   params[jj].lambda_eff  = lambda_eff
+   params[jj].dlambda_eff = dlambda_eff
+   params[jj].jd = all_dates[jj]
+endfor
 
-        ;; grab dataset name for input file...
-        istrt = strpos( params[jj].infile, '/', /reverse_search) > 0L
-        iend = strpos( params[jj].infile, '.fits')
-        dataset = strmid( params[jj].infile, istrt+1, iend-istrt-1)
+;; generate plots...
+lris_throughput_grating_plots, params, fig_time, OUTDIR=outdir, $
+                               CLOBBER=clobber
+newparam = replicate({PARAMS}, nnew)
+newparam.infile = newfiles
+newparam[0].lambda_eff = lambda_eff
+newparam[0].dlambda_eff = dlambda_eff
+newparam[0].jd = new_dates[0]
 
-        ;; build output file name...
-        outfile = outdir + '/' + dataset + extn
+;; generate detail pages...
+extn = '.html'
+   
+;; grab dataset name for input file...
+istrt = strpos( newparams[0].infile, '/', /reverse_search) > 0L
+iend = strpos( newparam[0].infile, '.fits')
+dataset = strmid( newparam[0].infile, istrt+1, iend-istrt-1)
 
-        params[jj].detail = outfile
-        params[jj].dataset = dataset
-        if keyword_set(VERBOSE) then begin
-            message, 'creating detail page '+outfile, /in
-        endif
-        lris_throughput_grating_detail_web_page, params[jj]
-    endfor
+;; build output file name...
+outfile = outdir + '/' + dataset + extn
 
-    ;; generate plots for grating summary...
-    lris_throughput_grating_summary_plots, params, summary, $
-      OUTDIR=outdir, $
-      CLOBBER=clobber
+newparam[0].detail = outfile
+newparam[0].dataset = dataset
+if keyword_set(VERBOSE) then begin
+   message, 'creating detail page '+outfile, /in
+endif
+lris_throughput_grating_detail_web_page, newparam[0]
+endfor
 
-    ;; generate grating summary page...
-    extn = '.html'
-    outfile = outdir + '/index.html'
-    if keyword_set(VERBOSE) then begin
-        message, 'creating summary page '+outfile, /in
-    endif 
-    lris_throughput_grating_summary_web_page, outfile, grating, $
-      params, summary
+;; generate plots for grating summary...
+lris_throughput_grating_summary_plots, params, summary, $
+                                       OUTDIR=outdir, $
+                                       CLOBBER=clobber
+
+;; generate grating summary page...
+extn = '.html'
+outfile = outdir + '/index.html'
+if keyword_set(VERBOSE) then begin
+   message, 'creating summary page '+outfile, /in
+endif 
+lris_throughput_grating_summary_web_page, outfile, grating, $
+                                          params, summary
 
 ;    ;; generate web page with plots...
 ;    outfile = outdir + '/plots.html'
@@ -237,7 +256,7 @@ for i=0,ndirs-1 do begin
 ;      FIG_EFF=params[nfiles-1].fig_eff, $
 ;      FIG_ZP_ANG=params[nfiles-1].fig_zp_ang
 ;;;      FIG_TIME=fig_time
-endfor 
+
 fulldirs = where(usedirs,nusedirs)
 if nusedirs eq 0 then begin
    message, 'No grating or grism directories contain output of lris_sensstd.'
@@ -248,6 +267,6 @@ endif
 outfile = rootoutdir +'/index.html'
 gratings = subdirs[fulldirs]
 href = subdirs[fulldirs] + '/doc/index.html'
-lris_throughput_master_web_page, outfile, gratings, href
+if newoutdir eq 1 then lris_throughput_master_web_page, outfile, gratings, href
 
 end
