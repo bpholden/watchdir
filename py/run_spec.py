@@ -46,14 +46,16 @@ def find_calibframes(frame,plan,calibs,datapath):
     flats = []
     arcs = []
     for calib in calibs:
-        if calib.type == "Line" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 and calib.instrument.name == frame.instrument.name:
+        if calib.type == "Line" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
+            and calib.instrument.name == frame.instrument.name and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
             arcs.append(calib)
             # check to see if the arc frame has been processed already, if so place processed file in
             # output directory
             # unprocessed frames are done automatically in Planutils
             linkreduced(calib,plan,"wave-",datapath)
                 
-        elif calib.type == "IntFlat" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20  and calib.instrument.name == frame.instrument.name:
+        elif calib.type == "IntFlat" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
+            and calib.instrument.name == frame.instrument.name  and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
             flats.append(calib)
             linkreduced(calib,plan,"slits-",datapath)
             linkreduced(calib,plan,"pixflat-",datapath)
@@ -155,15 +157,15 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
         return(False,msg,False)
 
 
-    pipeline = find_pipeline(frame,pipelines);
     # given an acceptable frame, we make the plan file
+    pipeline = find_pipeline(frame,pipelines);
     planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
     plan = Planutil.buildplan(frame,planname,stddir,pipeline)
     plan.frames.append(frame)
     # now we use the calib file list in the calib directory
     # to find matching calibrations
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
-    if not calframes:
+    if not calframes or len(calframes) == 0:
         return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
