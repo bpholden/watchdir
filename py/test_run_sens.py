@@ -58,3 +58,9 @@ if msg == "":
 else:
     print "failed in run_sensstd", msg
 
+msg = run_sens.run_sensstd(plan,"/",idlenv)
+if msg :
+    print "success in run_sensstd"
+else:
+    print "failed in run_sensstd", msg
+

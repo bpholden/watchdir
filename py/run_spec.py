@@ -74,6 +74,7 @@ def find_calibframes(frame,plan,calibs,datapath):
 
 def find_pipeline(frame,pipelines):
 
+    pipeline = ""
     for pipeline in pipelines:
         if type(pipeline.instrument) is types.ListType:
             for inst in pipeline.instrument:

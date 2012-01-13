@@ -35,12 +35,17 @@ def cleanup_savfile(testcalfile,testcalpath):
 # first - linkedreduced returns a Boolean, true for success
 if run_spec.linkreduced(calframe,plan,"wave-",os.getcwd()):
 	print "success in linkreduced"
+else:
+	print "failed in linkreduced"
+
+if not run_spec.linkreduced(calframe,plan,"wave-",os.getcwd()):
+	print "success in linkreduced"
 	if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
 		os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
 		cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
 else:
 	print "failed in linkreduced"
-    
+
 # second
 
 match,msg = run_spec.find_calibframes(stdframe,plan,calframes,os.getcwd())
@@ -64,6 +69,11 @@ else:
 # fourth
 msg = run_spec.find_if_okstar(stdframe.target,stars)
 if msg == correct_msg:
+	print "success in find_if_okstar"
+else:
+	print "failed in find_if_okstar", msg
+msg = run_spec.find_if_okstar("",stars)
+if not msg == correct_msg:
 	print "success in find_if_okstar"
 else:
 	print "failed in find_if_okstar", msg

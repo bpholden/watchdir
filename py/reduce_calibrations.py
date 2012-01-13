@@ -18,7 +18,7 @@ def makeplanflags(filename):
     try:
         flagfile = open(filename)
     except:
-        print "WARNING: %s not found, proceeding with no additional flags for XIDL"
+        print "WARNING: %s not found, proceeding with no additional flags for XIDL" % filename
         return(planflags)
 
     flagstrs = flagfile.read().splitlines()
