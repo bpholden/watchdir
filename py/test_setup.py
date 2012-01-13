@@ -29,6 +29,7 @@ try:
 			    instrument=stdframe.instrument,
 			    framelist="Object Line IntFlat Flat DmFlat Trace"                    
 		)
+	pipes = [xidlpipe]
 
 	plan = Planutil.buildplan(stdframe,"test.plan",os.getcwd(),xidlpipe)
 	plan.frames.append(stdframe)

@@ -125,7 +125,7 @@ def genframepathstr(filename,obsdate):
 
     months = ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec")
     datename = "%d%s%02d" % (obsdate.year,months[obsdate.month-1],obsdate.day)
-    relpath = os.path.join('Standards',datename,dirname)
+    relpath = os.path.join(datename,dirname)
 
     return(relpath)
 
