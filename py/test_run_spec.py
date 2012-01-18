@@ -20,38 +20,48 @@ from test_setup import *
 
 
 correct_msg = ""
+correct_failstar_msg = 'Frame observed  which is not in star list'
 correct_planflags  = "{}"
+correct_executable = os.path.join(os.getcwd(),correctplan.finalpath, correctplan.display_name+".csh")
 
 def cleanup_savfile(testcalfile,testcalpath):
-        savfile = "wave-"+testcalfile
-        if re.search(".fits.gz",savfile):
-            savfile = re.sub(".fits.gz",".sav",savfile)
-            os.unlink(os.path.join(testcalpath,savfile))
-        else:
-            savfile = re.sub(".fits",".sav",savfile)
-            os.unlink(os.path.join(testcalpath,savfile))
+    savfile = "wave-"+testcalfile
+    if re.search(".fits.gz",savfile):
+        savfile = re.sub(".fits.gz",".sav",savfile)
+        os.unlink(os.path.join(testcalpath,savfile))
+    else:
+        savfile = re.sub(".fits",".sav",savfile)
+        os.unlink(os.path.join(testcalpath,savfile))
 
+def cleanup_plandir(plan,testfile,testdir):
+
+    if plan:
+        os.unlink(os.path.join(os.path.absname(plan.finalpath),testfile),os.path.join(os.path.absname(testdir),testfile))
+    
 
 # first - linkedreduced returns a Boolean, true for success
-if run_spec.linkreduced(calframe,plan,"wave-",os.getcwd()):
+if run_spec.linkreduced(calframe,correctplan,"wave-",os.getcwd()):
 	print "success in linkreduced"
 else:
 	print "failed in linkreduced"
 
-if not run_spec.linkreduced(calframe,plan,"wave-",os.getcwd()):
-	print "success in linkreduced"
+if not run_spec.linkreduced(calframe,correctplan,"wave-",os.getcwd()):
+	print "success in linkreduced (fail test)"
 	if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
 		os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
 		cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
 else:
-	print "failed in linkreduced"
+	print "failed in linkreduced (fail test)"
+	if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
+		os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
+		cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
 
 # second
 
-match,msg = run_spec.find_calibframes(stdframe,plan,calframes,os.getcwd())
+match,msg = run_spec.find_calibframes(stdframe,correctplan,calframes,os.getcwd())
 if match[0] == calframe and msg == "No flats for frame r101216_0093.fits.gz":
 	print "success in find_calibframes"
-	plan.frames.append(match[0])
+	correctplan.frames.append(match[0])
 	if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
 		os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
 		cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
@@ -73,10 +83,10 @@ if msg == correct_msg:
 else:
 	print "failed in find_if_okstar", msg
 msg = run_spec.find_if_okstar("",stars)
-if not msg == correct_msg:
-	print "success in find_if_okstar"
+if msg == correct_failstar_msg:
+	print "success in find_if_okstar (fail test)"
 else:
-	print "failed in find_if_okstar", msg
+	print "failed in find_if_okstar (fail test)", msg
 
 # fifth
 msg = run_spec.check_if_std_frame(stdframe,stars)
@@ -87,8 +97,40 @@ else:
 
 	
 # sixth
-planflags = run_spec.genplanflags(plan)
+planflags = run_spec.genplanflags(correctplan)
 if planflags == correct_planflags:
 	print "success in genplanflags"
 else:
 	print "failed in genplanflags", planflags
+
+# seventh
+executable = run_spec.writeplan(correctplan,os.getcwd(),idlenv)
+if executable == correct_executable:
+	print "success in writeplan"
+        if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
+            os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
+            cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
+
+else:
+	print "failed in writeplan", executable
+
+# eight
+# curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv)
+# if retplan == correctplan:
+#	print "success in buildandrunplan"
+#        cleanup_plandir(retplan,testfile,testdir)
+#else:
+#	print "failed in buildandrunplan", retplan, msg
+#        cleanup_plandir(retplan,testfile,testdir)
+
+curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv)
+if retplan == False:
+	print "success in buildandrunplan (bad frame)"
+else:
+	print "failed in buildandrunplan (bad frame)", msg
+
+curproc,msg,retplan = run_spec.buildandrunplan(testcalfile,testdir,testdir,pipes,calframes,stars,idlenv)
+if retplan == False:
+	print "success in buildandrunplan (not a std frame)"
+else:
+	print "failed in buildandrunplan (not a std frame)", msg

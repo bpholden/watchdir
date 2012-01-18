@@ -151,7 +151,7 @@ def ingestframe(filename,path,datapath):
     try:
         hdr = pyfits.getheader(os.path.join(path,filename),0)
     except:
-        print "cannot open %s " %( os.path.join(path,filename))
+        print "cannot open %s in Frameutil.ingestframe()" %( os.path.join(path,filename))
         msg = "cannot open %s " % (filename)
         return(msg,frame)
 

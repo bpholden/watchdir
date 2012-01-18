@@ -15,29 +15,71 @@ import subprocess
 import sys
 import optparse
 import stat
+import gzip
 
+def speccopy(inputname,outputname):
+    """ cpgunzip(inputname, outputname)
+    this copies a gziped inputname to an uncompressed output name.
+    """
+    zipped = re.search("\.gz",inputname) # Is the file gzip'ed.  If it is, we need to check if the reduced cals are gzip'ed.
+                                         # If the reduced cals are gzip'ed, we need to uncompress them in the plan directory
+
+    if re.search("\.gz",outputname):
+        outputname = re.sub("\.gz","",outputname)
+
+    if zipped:
+
+        if os.path.isfile(inputname) and not os.path.isfile(outputname):
+            fin = gzip.open(inputname,"rb")
+        else:
+            return(False)
+        try:
+            fout = open(outputname,"wb")
+            fout.writelines(fin)
+            fout.close()
+            fin.close()
+        except:
+            return(False)
+    else :
+        try:
+            os.link(inputname,outputname)
+        except:
+            return(False)
+
+    return(True)
+    
 def linkreduced(calib,plan,prefix,datapath):
     reducedname = prefix + calib.name
 
-    zipped = re.search("\.gz",calib.name)
-    match = re.match("wave",prefix)
-    fullreducedname =  os.path.join(calib.path,reducedname)
-        
-    
-    if os.path.isfile(fullreducedname) and not os.path.isfile(os.path.join(datapath,plan.finalpath,reducedname)):
-        os.link(fullreducedname,os.path.join(datapath,plan.finalpath,reducedname))
-        if match:
-            if zipped:
-                reducedname = re.sub("\.fits.gz",".sav",reducedname)
-            else:
-                reducedname = re.sub("\.fits",".sav",reducedname)
-            if os.path.isfile(os.path.join(calib.path,reducedname)) and not os.path.isfile(os.path.join(datapath,plan.finalpath,reducedname)):
-                    os.link(os.path.join(calib.path,reducedname),os.path.join(datapath,plan.finalpath,reducedname))
-        return(True)
+    match = re.match("wave",prefix)       # If this is a arc line file, we need to copy both the wave-blah.fits and the wave-blah.sav
+
+    fullreducedname =  os.path.join(calib.path,reducedname) # current location
+    finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
+
+    if os.path.isfile(fullreducedname) :
+        if speccopy(fullreducedname,finalreducedname):
+            if match:
+                reducedname = re.sub("\.fits(.gz)?",".sav",reducedname)
+                fullreducedname =  os.path.join(calib.path,reducedname) # current location
+                finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
+                if os.path.isfile(fullreducedname) and not os.path.isfile(finalreducedname) :
+                    os.link(fullreducedname,finalreducedname)
+                else:
+                    print "%s already exists" % finalreducedname
+        else:
+            return(False)
     else:
         return(False)
 
 
+    return(True)
+
+def matchframe(frame,calib):
+    if calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
+    and calib.instrument.name == frame.instrument.name and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
+        return(True)
+    else:
+        return(False)
 
 def find_calibframes(frame,plan,calibs,datapath):
 
@@ -46,16 +88,14 @@ def find_calibframes(frame,plan,calibs,datapath):
     flats = []
     arcs = []
     for calib in calibs:
-        if calib.type == "Line" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
-            and calib.instrument.name == frame.instrument.name and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
+        if calib.type == "Line" and matchframe(frame,calib):
             arcs.append(calib)
             # check to see if the arc frame has been processed already, if so place processed file in
             # output directory
             # unprocessed frames are done automatically in Planutils
             linkreduced(calib,plan,"wave-",datapath)
                 
-        elif calib.type == "IntFlat" and calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
-            and calib.instrument.name == frame.instrument.name  and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
+        elif calib.type == "IntFlat" and matchframe(frame,calib):
             flats.append(calib)
             linkreduced(calib,plan,"slits-",datapath)
             linkreduced(calib,plan,"pixflat-",datapath)
@@ -166,6 +206,8 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     # to find matching calibrations
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
     if not calframes or len(calframes) == 0:
+        if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
+            os.rename(os.path.join(stddir,os.path.basename(filename)),os.path.join(watchdir,os.path.basename(filename)))
         return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
@@ -175,7 +217,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     cwd = os.path.dirname(executable)
     outputfile = open(os.path.join(cwd,'processoutput'),"wb")
     erroroutputfile = open(os.path.join(cwd,'processerroroutput'),"wb")
-
+    print "executable:",executable
     curproc = subprocess.Popen(executable,
                                cwd=cwd,stdout=outputfile,
                                stderr=erroroutputfile)
