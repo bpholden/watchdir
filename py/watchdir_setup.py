@@ -60,7 +60,7 @@ def makestarlist(starlistname):
     try:
         starfile = open(starlistname)
     except:
-        msg = 'Cannot open star list %s for reading'  %(starlist)
+        msg = 'Cannot open star list %s for reading'  %(starlistname)
         return([],msg)
 
     starlisttxt= starfile.read()
@@ -79,6 +79,36 @@ def makestarlist(starlistname):
 
 
     return(stars,msg)
+
+def findframe(startdir,camera,grating,filename):
+    """findframe(startdir, camera, grating, filename)
+    This routine will search for a filename.  It will start in startdir,
+    then it will descend into a directory named after the camera+grating.
+    After that, it will search subdirectories of the form w\d+.
+    If the file is still not found, it fails
+    """
+    grating = re.sub("\/","_",grating)
+    gdir = camera + grating
+    if os.path.isfile(os.path.join(startdir,filename)):
+        return(startdir)
+    else:
+        # now the grating directory
+        if os.path.isfile(os.path.join(startdir,gdir,filename)):
+            return(os.path.join(startdir,gdir))
+        poswavedirs = glob.glob(os.path.join(startdir,gdir) + '/w*')
+        wavedirs = []
+
+        for pwd in poswavedirs:
+            if re.search("w\d+",pwd):
+                wavedirs.append(pwd) 
+
+
+        for wd in wavedirs:
+            # alright, now we search the subdirs
+            if os.path.isfile(os.path.join(wd,filename)):
+                return(wd)
+
+    return(None)
 
 def makecallist(callist,caldir,stddir):
 
@@ -101,20 +131,23 @@ def makecallist(callist,caldir,stddir):
             flags = " ".join(linearray[7:])
         else:
             return([])
-        calframe = Frame(name=filename,path=caldir,display_name=filename)
-        calframe.grating = grating
-        calframe.wavelength = float(wavelen)
-        calframe.type = filetype
-        calframe.xbinning = int(xb)
-        calframe.ybinning = int(yb)
-        calframe.flags = flags
-        if camera == "r":
-            calframe.instrument=Instrument(name=u'lrisred',display_name=u'LRISRED')
-        elif camera == "b":
-            calframe.instrument =Instrument(name=u'lrisblue',display_name=u'LRISBLUE')
-        calframes.append(calframe)
-        make_gratingdir(filename,grating,stddir)
-
+        calframepath = findframe(caldir,camera,grating,filename)
+        if calframepath:
+            calframe = Frame(name=filename,path=calframepath,display_name=filename)
+            calframe.grating = grating
+            calframe.wavelength = float(wavelen)
+            calframe.type = filetype
+            calframe.xbinning = int(xb)
+            calframe.ybinning = int(yb)
+            calframe.flags = flags
+            if camera == "r":
+                calframe.instrument=Instrument(name=u'lrisred',display_name=u'LRISRED')
+            elif camera == "b":
+                calframe.instrument =Instrument(name=u'lrisblue',display_name=u'LRISBLUE')
+            calframes.append(calframe)
+            make_gratingdir(filename,grating,stddir)
+        else:
+            print "Cannot find file %s in %s or appropriate subdirectories." % (filename,caldir)
     
     return(calframes)
 
