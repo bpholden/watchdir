@@ -131,7 +131,7 @@ def movetodone(filename,newname):
         # crap.  This means that the file is already in the done directory.
         gstr = filename + "*"
         files = glob.glob(gstr)
-        newname = newname + "%d" len(files)
+        newname = newname + "%d" % len(files)
         try:
             os.rename( filename,newname) # stash it out of the way
         except:
