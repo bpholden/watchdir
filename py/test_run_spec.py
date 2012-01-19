@@ -26,12 +26,20 @@ correct_executable = os.path.join(os.getcwd(),correctplan.finalpath, correctplan
 
 def cleanup_savfile(testcalfile,testcalpath):
     savfile = "wave-"+testcalfile
-    if re.search(".fits.gz",savfile):
-        savfile = re.sub(".fits.gz",".sav",savfile)
+    savfile = re.sub(".fits(.gz)?",".sav",savfile)
+    if os.path.isfile(os.path.join(testcalpath,savfile)):
         os.unlink(os.path.join(testcalpath,savfile))
-    else:
-        savfile = re.sub(".fits",".sav",savfile)
-        os.unlink(os.path.join(testcalpath,savfile))
+
+def cleanup_calfile(testcalfile,testcalpath):
+    cleanup_savfile(testcalfile,testcalpath)
+    if os.path.isfile(os.path.join(testcalpath,testcalfile)):
+        os.unlink(os.path.join(testcalpath,testcalfile))
+    if re.search(".fits.gz",testcalfile):
+        testcalfile = re.sub("\.gz","",testcalfile)
+        testcalfile = "wave-"+testcalfile
+        if os.path.isfile(os.path.join(testcalpath,testcalfile)):
+            os.unlink(os.path.join(testcalpath,testcalfile))
+
 
 def cleanup_plandir(plan,testfile,testdir):
 
@@ -107,9 +115,7 @@ else:
 executable = run_spec.writeplan(correctplan,os.getcwd(),idlenv)
 if executable == correct_executable:
 	print "success in writeplan"
-        if os.path.isfile(os.path.join(testdir,testfiledir,"wave-"+testcalfile)):
-            os.unlink(os.path.join(testdir,testfiledir,"wave-"+testcalfile))
-            cleanup_savfile(testcalfile,os.path.join(testdir,testfiledir))
+        cleanup_calfile(testcalfile,os.path.join(testdir,testfiledir))
 
 else:
 	print "failed in writeplan", executable
@@ -125,7 +131,7 @@ else:
 
 curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv)
 if retplan == False:
-	print "success in buildandrunplan (bad frame)"
+	print "success in buildandrunplan (bad frame) - Previous line should have a \"cannot open\" error"
 else:
 	print "failed in buildandrunplan (bad frame)", msg
 

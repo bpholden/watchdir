@@ -108,10 +108,7 @@ while True:
             print "%s appears to be have an issue, moving to done" % (filename)
             newname = os.path.join(watchdir,"done",os.path.basename(filename)) 
             print filename, "=>" ,newname
-            if not os.path.isdir(os.path.dirname(newname)):
-                os.mkdir(newname)
-                
-            os.rename( filename,newname) # stash it out of the way
+            movetodone(filename,newname)
 
 
         

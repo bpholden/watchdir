@@ -46,21 +46,16 @@ else:
 
 # third
 # make exceutable
-executable = run_sens.writesens_str(plan,os.getcwd(),correct_sens_str,idlenv)
+executable = run_sens.writesens_str(correctplan,os.getcwd(),correct_sens_str,idlenv)
 if executable == correct_executable:
     print "success in writesens_str"
 else:
     print "failed in writsens_str", executable
 
-msg = run_sens.run_sensstd(plan,os.getcwd(),idlenv)
+msg = run_sens.run_sensstd(correctplan,os.getcwd(),idlenv)
 if msg == "":
     print "success in run_sensstd"
 else:
     print "failed in run_sensstd", msg
 
-msg = run_sens.run_sensstd(plan,"/",idlenv)
-if msg :
-    print "success in run_sensstd"
-else:
-    print "failed in run_sensstd", msg
 
