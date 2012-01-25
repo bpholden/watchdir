@@ -134,12 +134,12 @@ def genframepath(datapath,outpath):
     os.makedirs(os.path.join(datapath,outpath))
 
 
-def ingestframe(filename,path,datapath):
+def ingestframe(filename,path,datapath,flag=dict(redo=False)):
     """
     ingestframe(filename, path, datapath)
     filename - filename on the file system of a fits file to ingest
     path - path to the file, whole path
-    datapath - a Datapath instance
+    datapath - the output path
 
     this routine takes a file  and does the appropriate shuffling to
     move the file to the correct place in the filesystem
@@ -197,8 +197,8 @@ def ingestframe(filename,path,datapath):
 #    relpath = os.path.join(str(owner.user_name) ,'rawdata',instrument)
 
 
-    if not os.path.isfile(newpath):
-        os.rename(os.path.join(path,filename),newpath)
+    if not os.path.isfile(newpath) or flag['redo'] == True:
+        os.link(os.path.join(path,filename),newpath)
     else:
         msg = "%s already in the system, and overwrite was not selected" % (filename)
         print msg

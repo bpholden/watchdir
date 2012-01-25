@@ -44,7 +44,20 @@ def cleanup_calfile(testcalfile,testcalpath):
 def cleanup_plandir(plan,testfile,testdir):
 
     if plan:
-        os.unlink(os.path.join(os.path.absname(plan.finalpath),testfile),os.path.join(os.path.absname(testdir),testfile))
+        # os.unlink(os.path.join(os.path.abspath(plan.finalpath),testfile))
+        sfiles = glob.glob(os.path.join(testdir,plan.finalpath) + '/Science/*')
+        for sf in sfiles:
+            if os.path.isfile(sf):
+                os.unlink(sf)
+        os.rmdir(os.path.join(testdir,plan.finalpath,'Science'))
+        files = glob.glob(os.path.join(testdir,plan.finalpath) + '/*')
+        for f in files:
+            if os.path.isfile(f):
+                os.unlink(f)
+
+        os.rmdir(os.path.join(testdir,plan.finalpath))
+        os.rmdir(os.path.dirname(os.path.join(testdir,plan.finalpath)))
+
     
 
 # first - linkedreduced returns a Boolean, true for success
@@ -121,13 +134,13 @@ else:
 	print "failed in writeplan", executable
 
 # eight
-# curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv)
-# if retplan == correctplan:
-#	print "success in buildandrunplan"
-#        cleanup_plandir(retplan,testfile,testdir)
-#else:
-#	print "failed in buildandrunplan", retplan, msg
-#        cleanup_plandir(retplan,testfile,testdir)
+curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv)
+if retplan.display_name == correctplan.display_name:
+	print "success in buildandrunplan"
+        cleanup_plandir(retplan,testfile,testdir)
+else:
+	print "failed in buildandrunplan", retplan, msg
+        cleanup_plandir(retplan,testfile,testdir)
 
 curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv)
 if retplan == False:

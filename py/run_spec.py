@@ -193,7 +193,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     if msg:
         # crap - at this point we have already moved the to stddir
         if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
-            os.rename(os.path.join(stddir,os.path.basename(filename)),os.path.join(watchdir,os.path.basename(filename)))
+            os.unlink(os.path.join(stddir,os.path.basename(filename)))
         return(False,msg,False)
 
 
@@ -207,7 +207,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
     if not calframes or len(calframes) == 0:
         if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
-            os.rename(os.path.join(stddir,os.path.basename(filename)),os.path.join(watchdir,os.path.basename(filename)))
+            os.unlink(os.path.join(stddir,os.path.basename(filename)))
         return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file

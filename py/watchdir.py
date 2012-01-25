@@ -97,8 +97,11 @@ while True:
             
             newname = re.sub(r'fits',r'running',filename)
             newname += ".%d" % newproc.pid
-        
+            donename = os.path.join(watchdir,"done",os.path.basename(filename))
+            print filename, "=>" ,donename
+            movetodone(filename,donename)
             numjobs+=1
+
             pidfile = open(os.path.join(watchdir,newname),"w")
             pidfile.write("")
             pidfile.close()
@@ -106,9 +109,9 @@ while True:
         else:
             print msg
             print "%s appears to be have an issue, moving to done" % (filename)
-            newname = os.path.join(watchdir,"done",os.path.basename(filename)) 
-            print filename, "=>" ,newname
-            movetodone(filename,newname)
+            donename = os.path.join(watchdir,"done",os.path.basename(filename)) 
+            print filename, "=>" ,donename
+            movetodone(filename,donename)
 
 
         
