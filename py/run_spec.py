@@ -181,10 +181,10 @@ def writeplan(plan,datapath,idlenv):
 
     return(executable)
 
-def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv):
+def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag):
 
     # first, we parse the input file and make the frame instance
-    msg,frame= Frameutil.ingestframe(os.path.basename(filename),watchdir,stddir)
+    msg,frame= Frameutil.ingestframe(os.path.basename(filename),watchdir,stddir,flag)
     if not frame:
         return(False,msg,False)
 

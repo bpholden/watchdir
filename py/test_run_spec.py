@@ -49,11 +49,13 @@ def cleanup_plandir(plan,testfile,testdir):
         for sf in sfiles:
             if os.path.isfile(sf):
                 os.unlink(sf)
-        os.rmdir(os.path.join(testdir,plan.finalpath,'Science'))
+                #        os.rmdir(os.path.join(testdir,plan.finalpath,'Science'))
         files = glob.glob(os.path.join(testdir,plan.finalpath) + '/*')
         for f in files:
             if os.path.isfile(f):
                 os.unlink(f)
+            elif os.path.isdir(f):
+                os.rmdir(f)
 
         os.rmdir(os.path.join(testdir,plan.finalpath))
         os.rmdir(os.path.dirname(os.path.join(testdir,plan.finalpath)))
@@ -134,7 +136,8 @@ else:
 	print "failed in writeplan", executable
 
 # eight
-curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv)
+flag = dict(redo=False)
+curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
 if retplan.display_name == correctplan.display_name:
 	print "success in buildandrunplan"
         cleanup_plandir(retplan,testfile,testdir)
@@ -142,13 +145,13 @@ else:
 	print "failed in buildandrunplan", retplan, msg
         cleanup_plandir(retplan,testfile,testdir)
 
-curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv)
+curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv,flag)
 if retplan == False:
 	print "success in buildandrunplan (bad frame) - Previous line should have a \"cannot open\" error"
 else:
 	print "failed in buildandrunplan (bad frame)", msg
 
-curproc,msg,retplan = run_spec.buildandrunplan(testcalfile,testdir,testdir,pipes,calframes,stars,idlenv)
+curproc,msg,retplan = run_spec.buildandrunplan(testcalfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
 if retplan == False:
 	print "success in buildandrunplan (not a std frame)"
 else:

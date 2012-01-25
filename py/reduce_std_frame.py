@@ -45,6 +45,8 @@ parser.add_option('-l','--callist', dest='callist', action='store',
 parser.add_option('-i','--idlenv', dest='idlenv', action='store',
                    default="idlenv",type="string",
                    help='path to idlenv, file that contains all of the environment definitions required')
+parser.add_option('-r','--redo', dest='redo', action='store_true',
+                   help='Will rereduce a standard observation, otherwise will skip')
 (options,args) = parser.parse_args()
 
 # Now make the paths more useful
@@ -55,6 +57,8 @@ caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
 starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
 idlenv = os.path.abspath(options.idlenv)
+
+flag = dict(redo=options.redo)
 
 calibs = makecallist(callist,caldir,stddir)
 if not calibs:
@@ -79,7 +83,7 @@ for infile in args:
         filename = os.path.basename(infile)
         filedir = os.path.abspath(os.path.join(rootfiledir,os.path.dirname(infile)))
                             
-    newproc,msg,plan = buildandrunplan(filename,filedir,stddir,pipelist,calibs,stars,idlenv)
+    newproc,msg,plan = buildandrunplan(filename,filedir,stddir,pipelist,calibs,stars,idlenv,flag)
     if newproc:
         print "Running reduction, now we wait." 
         time.sleep(10)

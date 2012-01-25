@@ -59,6 +59,7 @@ caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
 starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
 idlenv = os.path.abspath(options.idlenv)
+flag = dict(redo=False)
 
 calibs = makecallist(callist,caldir,stddir)
 if not calibs:
@@ -90,7 +91,7 @@ while True:
 
         filename = todolist.pop()
           
-        newproc,msg,plan = buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv)
+        newproc,msg,plan = buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
         if newproc:
             proclist.append(newproc)
             planlist.append(plan)
