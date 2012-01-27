@@ -80,6 +80,15 @@ numjobs = 0
 proclist = []
 planlist = []
 
+logfile = startlog()
+
+logfile.write("watchdir = %s\n" % watchdir)
+logfile.write("stddir = %s\n" % stddir)
+logfile.write("caldir = %s\n" % caldir)
+logfile.write("callist = %s\n" % callist)
+logfile.write("starlist = %s\n" % starlist)
+logfile.write("idlenv = %s\n" % idlenv)
+
 while True:
 
     todolist = glob.glob(os.path.join(watchdir,'*.fits'))
@@ -87,19 +96,22 @@ while True:
     # first stuff the queue
     # this ends when either the queue is full or the todo list is empty
     while(numjobs < options.maxjobs and len(todolist)):
-
-
+        logfile.write("New files found:\n")
+        logfile.write(" ".join(todolist) + "\n")
         filename = todolist.pop()
-          
+        logfile.write("Starting %s\n" % filename)
+        
         newproc,msg,plan = buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
         if newproc:
             proclist.append(newproc)
             planlist.append(plan)
-            
+            logfile.write("running pid = %d\n" % newproc.pid)
+            logfile.write("plan = %s at %s\n" % (plan.display_name,plan.finalpath) )
             newname = re.sub(r'fits',r'running',filename)
             newname += ".%d" % newproc.pid
             donename = os.path.join(watchdir,"done",os.path.basename(filename))
             print filename, "=>" ,donename
+            logfile.write("copying " + filename + " => " +donename + '\n')
             movetodone(filename,donename)
             numjobs+=1
 
@@ -110,8 +122,11 @@ while True:
         else:
             print msg
             print "%s appears to be have an issue, moving to done" % (filename)
+            logfile.write(msg+"\n")
+            logfile.write("%s appears to be have an issue, moving to done\n" % (filename))
             donename = os.path.join(watchdir,"done",os.path.basename(filename)) 
             print filename, "=>" ,donename
+            logfile.write("copying " + filename + " => " +donename + "\n")
             movetodone(filename,donename)
 
 
@@ -128,13 +143,18 @@ while True:
         if proc.poll() != None:
             proclist.remove(proc)
             pids = "%d" % proc.pid
+            cstr = "pid %d has finished" % (proc.pid)
             files = glob.glob(watchdir + '/*.'+pids)
+            logfile.write(cstr+"\n")
             if len(files) > 0:
                 filename = files[0]
-                print "%s (pid %d) has finished" % (filename,proc.pid)
-                msg = run_sensstd(planlist.pop(numproc),stddir,idlenv)
+                cplan = planlist.pop(numproc)
+                print cstr
+                logfile.write("Running lris_senstd for %s at %s\n"  % (cplan.display_name,cplan.finalpath) )
+                msg = run_sensstd(cplan,stddir,idlenv)
                 print msg
-            os.unlink(filename)
+                logfile.write(msg+"\n")
+                os.unlink(filename)
             numjobs-=1
 
     #

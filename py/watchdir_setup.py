@@ -169,3 +169,8 @@ def movetodone(filename,newname):
             os.rename( filename,newname) # stash it out of the way
         except:
             print "cannot move %s to %s!\n" % (filename,newname)
+
+def startlog(logfilename="watchdir.log"):
+    
+    logfile = open(logfilename,"a")
+    return logfile
