@@ -313,11 +313,9 @@ def writelongplan(plan,datapath):
 
 def modrunstr(plan,datapath):
 
-    # This relies on the run string as it is in the database 
-    # Really, I need only one runstr (that associated with the Pipeline)
-    # The plan object should be runstrflags or some such.
+    # This relies on the run string 
 
-    # The actual item stored in the database as the runstr is stripped of leading and trailing spaces.
+    # The actual item stored in the model as the runstr is stripped of leading and trailing spaces.
     # If the camera is the lris blue and there are not pixel flats, then the PIXFLAT_ARCHIVE flag is added.
     
     # In addition, if the user has taken pixel flats (images with the dispersing element but without an aperture, usually on the sky)

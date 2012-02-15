@@ -154,8 +154,26 @@ def check_if_std_frame(frame,stars):
     msg = find_if_okstar(frame.target,stars)
     return(msg)    
 
-def genplanflags(plan):
 
+def pipeflags(frame,pipeline):
+    """ pipeflags(frame,pipeline)
+
+    This adds pipeline specific plan flags.
+    
+    """
+    if pipeline.display_name ==  "XIDL for LRIS":
+        if frame.ybinning == 1:
+            frame.flags = "bin_ratio=1"
+
+
+
+def genplanflags(plan):
+    """genplanflags(plan)
+
+    Generates plan flags from a frame attached to the plan.  The flags
+    are then bundled into a str using the dicttostr() function.
+    """
+    
     flagsd = dict()
     for frame in plan.frames:
         if frame.flags != "":
@@ -198,7 +216,8 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
 
 
     # given an acceptable frame, we make the plan file
-    pipeline = find_pipeline(frame,pipelines);
+    pipeline = find_pipeline(frame,pipelines)
+    pipeflags(frame,pipeline)
     planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
     plan = Planutil.buildplan(frame,planname,stddir,pipeline)
     plan.frames.append(frame)

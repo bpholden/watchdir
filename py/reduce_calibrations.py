@@ -31,8 +31,19 @@ def makeplanflags(filename):
 
     return(planflags)
         
-def makecallist(callist,caldir,stddir):
+def makecallist(callist,caldir):
+    """makecallist(callist, caldir)
 
+    This reads in the file specified as callist.
+    The path must be absolute, or the routine will return False
+
+    The caldir is used to constructed the Frame object, so that future
+    functions will know where the actual is located (thus, in theory,
+    the calibration file and the callist can be in two different
+    places.)
+
+    
+    """
     try:
         calfile = open(callist)
     except:
@@ -75,7 +86,13 @@ def makecallist(callist,caldir,stddir):
     return(calframes)
 
 def gen_planrun(cwd,caldir,planflags):
+    """gen_planrun(cwd,caldir,planflags)
 
+    This generates the run string.  It first takes the flags and turns
+    it into a IDL string e.g, ,foo=100,/bar Then it uses the path info
+    to setup the shell script.  The actual idl string with the run
+    string flags is built.
+    """
     planflagstr = ""
     for k in planflags.keys():
         planflagstr += ",%s" % planflags[k]
@@ -88,6 +105,15 @@ def gen_planrun(cwd,caldir,planflags):
     
 
 def gen_planflags(dir,calibs,flagdict):
+    """gen_planflags(directory, calib list, flag dictionary)
+
+    This generates the flags for a data reduction plan.  It uses the
+    flag dictionary made in makeplanflags().  The dictionary keys by
+    grating and binning in the y direction.  The function searches the
+    directory (dir), and finds the fits files in the calibs list.  It
+    then references the appropriate flags from the flagdict.
+    
+    """
     planflags=dict()
     fitsfiles = glob.glob(dir + "/*.fits*")
     for fitsfile in fitsfiles:
@@ -99,6 +125,15 @@ def gen_planflags(dir,calibs,flagdict):
     return planflags
 
 def write_plan(dir,calibs):
+    """ write_plan(dir,calibs)
+
+    This reads in the directory passed.  For each file in that
+    directory that is in the calibration list, it builts up a string
+    for the plan file.  This routine also has all of the header
+    information for the plan file.  All of this is written to a file
+    in the specified directory (dir) called "plan.par".
+    
+    """
     fitsfiles = glob.glob(dir + "/*.fits*")
     #    print fitsfiles
     nfiles = len(fitsfiles)
@@ -173,7 +208,7 @@ caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
 flagfile = os.path.abspath(os.path.join(options.caldir,options.flagfile)) # get the absolute path - so we can use this later for path manipulations
 
-calibs = makecallist(callist,caldir,".")
+calibs = makecallist(callist,caldir)
 flagdict = makeplanflags(flagfile)
 
 rdirs = find_dirs(glob.glob(os.path.join(caldir,"r*_*")))

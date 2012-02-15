@@ -178,7 +178,7 @@ def writerunstr(runpath,datapath,finalrunstr,idlenv):
 # 'setenv IDL_DIR /usr/local/idl_80/idl\nsource /home/lris/idl/IPM/THROUGHPUT/watchdir_env/idlenv\n'
     
     rawpath = os.path.join(datapath)
-    envstuff = envstuff + "#setenv DEIMOS_DATA " + rawpath + "\n"
+    #    envstuff = envstuff + "#setenv DEIMOS_DATA " + rawpath + "\n"
     runfile = open(runpath,'w')
     runfile.write(envstuff)
 
