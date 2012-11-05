@@ -1,0 +1,8 @@
+watchdir = /Volumes/Data1/lris/thru/indir
+stddir = /Volumes/Data1/lris/thru/Standards
+kroot = /Volumes/Data1/lris/thru
+starlist = 0000_Throughput_standards.list
+caldir = /Volumes/Data1/lris/thru/cals
+callist = calibration.list
+idlenv = ../etc/idlenv
+maxjobs = 1
