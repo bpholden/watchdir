@@ -1,0 +1,13 @@
+There are two (2) programs that will test the installation.
+
+They are called:
+
+test_run_spec.py
+test_run_sens.py
+
+Run them, read the output carefully.
+*****
+ERRORS WILL BE REPORTED!
+This is ok. They are suppose to be caught and found.
+*****
+
