@@ -82,6 +82,19 @@ def matchframe(frame,calib):
         return(False)
 
 def find_calibframes(frame,plan,calibs,datapath):
+    """ find_calibframes(frame,plan,calibs,datapath)
+
+    Given a data frame and a data reduction plan, this looks through
+    the calib list and finds the matching calibrations for the frame.
+    It returns a list of frame objects that are matches.
+    If it does not find arcs or flats, it will return a message.
+
+    The calibration frames are copied into the plan directory.  If
+    reduced calibration frames are available, those are also copied
+    into the plan directory.  All copies are done with a link, so they
+    are not independent of the original data.
+    
+    """
 
     msg = ""
     matchs = []
@@ -174,6 +187,7 @@ def genplanflags(plan):
     are then bundled into a str using the dicttostr() function.
     """
     
+    
     flagsd = dict()
     for frame in plan.frames:
         if frame.flags != "":
@@ -211,7 +225,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     if msg:
         # crap - at this point we have already moved the to stddir
         if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
-            os.unlink(os.path.join(stddir,os.path.basename(filename)))
+            os.remove(os.path.join(stddir,os.path.basename(filename)))
         return(False,msg,False)
 
 
@@ -219,14 +233,17 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     pipeline = find_pipeline(frame,pipelines)
     pipeflags(frame,pipeline)
     planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
-    plan = Planutil.buildplan(frame,planname,stddir,pipeline)
+    plan = Planutil.buildplan(frame,planname,stddir,pipeline,flag)
     plan.frames.append(frame)
     # now we use the calib file list in the calib directory
     # to find matching calibrations
+    #
+    # find_calibframes also will copy those frames into the plan
+    # directory
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
     if not calframes or len(calframes) == 0:
         if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
-            os.unlink(os.path.join(stddir,os.path.basename(filename)))
+            os.remove(os.path.join(stddir,os.path.basename(filename)))
         return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file

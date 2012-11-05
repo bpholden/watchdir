@@ -24,11 +24,11 @@ def makeplan_displayname(frame):
 
     return displayname
 
-def buildplan(frame,planname,datapath,pipeline):
+def buildplan(frame,planname,datapath,pipeline,flag):
 
     """The guts of plan making.
 
-    Pass in a data frame, planname, integer, datapath object.  Optional pipeline object.
+    Pass in a data frame, planname, integer, datapath object, pipeline object.
 
     The data frame determines the plan display name (based on the
     instrument).  Interger is for the name, to provide each plan a
@@ -36,10 +36,6 @@ def buildplan(frame,planname,datapath,pipeline):
     same data).
     
     Then, this builds plan object.
-
-    If no pipeline is passed, grabs the last pipeline available for
-    that instrument (the last being the one most recently added to the
-    db).
 
     The output path is the input frame path with rawdata changed to findata.
     # FIX for other paths
@@ -57,13 +53,26 @@ def buildplan(frame,planname,datapath,pipeline):
 
     plan.finalpath = frame.path
 
-    if not os.access(os.path.join(datapath,plan.finalpath),os.F_OK):
-            os.makedirs(os.path.join(datapath,plan.finalpath))
-            # I KNOW, I KNOW!!!
-            fullfinalpath = os.path.join(datapath,plan.finalpath)
-            os.chmod(fullfinalpath,0777)
-            os.chmod(os.path.dirname(fullfinalpath.rstrip("/")),0777)
+    fullpath = os.path.join(datapath,plan.finalpath)
 
+    if not os.access(fullpath,os.F_OK):
+        os.makedirs(fullpath)
+        # I KNOW, I KNOW!!!
+        os.chmod(fullpath,0777)
+        os.chmod(os.path.dirname(fullpath.rstrip("/")),0777)
+    elif  os.path.isdir(fullpath) and flag['redo']:
+        files = glob.glob(fullpath + "/*.fits*")
+        for cfile in files:
+            if os.path.basename(cfile) != frame.name:
+                os.remove(os.path.join(cfile))
+        files = glob.glob(fullpath + "/*.???")
+        for cfile in files:
+            os.remove(os.path.join(cfile))
+        files = glob.glob(fullpath + "/Science/*")
+        for cfile in files:
+            os.remove(os.path.join(cfile))
+        os.rmdir(os.path.join(fullpath,"Science"))
+        
     plan.instrument = frame.instrument
 
     plan.pipeline = pipeline

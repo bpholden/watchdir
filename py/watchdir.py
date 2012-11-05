@@ -16,10 +16,32 @@ import subprocess
 import sys
 import optparse
 import stat
-from run_sens import *
-from run_spec import *
 
-from watchdir_setup import * # yes, I KNOW, I KNOW!
+from FileConfig import FileConfig
+import run_sens 
+import run_spec 
+import watchdir_setup
+
+def setup_options(options,fileconfig=None):
+
+
+    # if there is a fileconfig, we overwrite the values
+    if fileconfig:
+        fcconfig = fileconfig.return_config()
+
+        for key in fcconfig.keys():
+            setattr(options,key,fcconfig[key])
+            
+    watchdir = os.path.abspath(options.watchdir) # get the absolute path - so we can use this later for path manipulations
+    stddir = os.path.abspath(options.stddir) # get the absolute path - so we can use this later for path manipulations
+    caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use this later for path manipulations
+    callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
+    starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
+    idlenv = os.path.abspath(options.idlenv)
+
+    
+
+    return watchdir,stddir,caldir,callist,starlist,idlenv
 
 
 # -- main 
@@ -49,38 +71,44 @@ parser.add_option('-m','--maxjobs', dest='maxjobs', action='store',
                    default=1,type="int",
                    help="Maximum number of jobs to run at once.")
 
+parser.add_option('-f','--file', dest='configfile', action='store',
+                   default=None,type="string",
+                   help="A configuration file containing values. Configuration values will override those set by flags")
+
 (options,args) = parser.parse_args()
+
+if options.configfile:
+    # this was set, so we try to open it.
+    fileconfig = FileConfig(filename=options.configfile)
+else:
+    fileconfig = None
+    
+watchdir,stddir,caldir,callist,starlist,idlenv = setup_options(options,fileconfig)
 
 # Now make the paths more useful
 
-watchdir = os.path.abspath(options.watchdir) # get the absolute path - so we can use this later for path manipulations
-stddir = os.path.abspath(options.stddir) # get the absolute path - so we can use this later for path manipulations
-caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use this later for path manipulations
-callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
-starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
-idlenv = os.path.abspath(options.idlenv)
 flag = dict(redo=False)
 
-calibs = makecallist(callist,caldir,stddir)
+calibs = watchdir_setup.makecallist(callist,caldir,stddir)
 if not calibs:
     print "file %s cannot be opened for reading" % (os.path.join(caldir,callist))
     sys.exit()
 
-stars,msg = makestarlist(starlist)
+stars,msg = watchdir_setup.makestarlist(starlist)
 if not stars:
     print msg
     sys.exit()
     
 pathlist=['done']
-prepdirs(os.path.join(watchdir),pathlist)
+watchdir_setup.prepdirs(os.path.join(watchdir),pathlist)
 
-pipelist = prep_pipelines()
+pipelist = watchdir_setup.prep_pipelines()
 
 numjobs = 0
 proclist = []
 planlist = []
 
-logfile = startlog()
+logfile = watchdir_setup.startlog()
 
 logfile.write("watchdir = %s\n" % watchdir)
 logfile.write("stddir = %s\n" % stddir)
@@ -101,7 +129,7 @@ while True:
         filename = todolist.pop()
         logfile.write("Starting %s\n" % filename)
         
-        newproc,msg,plan = buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
+        newproc,msg,plan = run_spec.buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
         if newproc:
             proclist.append(newproc)
             planlist.append(plan)
@@ -112,7 +140,7 @@ while True:
             donename = os.path.join(watchdir,"done",os.path.basename(filename))
             print filename, "=>" ,donename
             logfile.write("copying " + filename + " => " +donename + '\n')
-            movetodone(filename,donename)
+            watchdir_setup.movetodone(filename,donename)
             numjobs+=1
 
             pidfile = open(os.path.join(watchdir,newname),"w")
@@ -127,7 +155,7 @@ while True:
             donename = os.path.join(watchdir,"done",os.path.basename(filename)) 
             print filename, "=>" ,donename
             logfile.write("copying " + filename + " => " +donename + "\n")
-            movetodone(filename,donename)
+            watchdir_setup.movetodone(filename,donename)
 
 
         
@@ -151,7 +179,7 @@ while True:
                 cplan = planlist.pop(numproc)
                 print cstr
                 logfile.write("Running lris_senstd for %s at %s\n"  % (cplan.display_name,cplan.finalpath) )
-                msg = run_sensstd(cplan,stddir,idlenv)
+                msg = run_sens.run_sensstd(cplan,stddir,idlenv)
                 print msg
                 logfile.write(msg+"\n")
                 os.unlink(filename)

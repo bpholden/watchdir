@@ -45,8 +45,8 @@ parser.add_option('-l','--callist', dest='callist', action='store',
 parser.add_option('-i','--idlenv', dest='idlenv', action='store',
                    default="idlenv",type="string",
                    help='path to idlenv, file that contains all of the environment definitions required')
-parser.add_option('-r','--redo', dest='redo', action='store_true',
-                   help='Will rereduce a standard observation, otherwise will skip')
+parser.add_option('-r','--redo', dest='redo', action='store_true',default=False,
+                   help='Will rereduce a standard observation, otherwise will skip if was attempted')
 (options,args) = parser.parse_args()
 
 # Now make the paths more useful
@@ -56,7 +56,7 @@ stddir = os.path.abspath(options.stddir) # get the absolute path - so we can use
 caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use this later for path manipulations
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
 starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
-idlenv = os.path.abspath(options.idlenv)
+idlenv = os.path.abspath(options.idlenv) # get the absolute path of the file containing the environment variables
 
 flag = dict(redo=options.redo)
 

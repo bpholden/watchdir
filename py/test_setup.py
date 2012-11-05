@@ -34,7 +34,8 @@ try:
 		)
 	pipes = [xidlpipe]
 
-	correctplan = Planutil.buildplan(stdframe,"test.plan",os.getcwd(),xidlpipe)
+	flag = dict(redo=False)
+	correctplan = Planutil.buildplan(stdframe,"test.plan",os.getcwd(),xidlpipe,flag)
 	correctplan.frames.append(stdframe)
 
 	calframes = [calframe]

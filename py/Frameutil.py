@@ -197,7 +197,10 @@ def ingestframe(filename,path,datapath,flag=dict(redo=False)):
 #    relpath = os.path.join(str(owner.user_name) ,'rawdata',instrument)
 
 
-    if not os.path.isfile(newpath) or flag['redo'] == True:
+    if not os.path.isfile(newpath) :
+        os.link(os.path.join(path,filename),newpath)
+    elif flag['redo'] == True and os.path.isfile(newpath):
+        os.remove(newpath)
         os.link(os.path.join(path,filename),newpath)
     else:
         msg = "%s already in the system, and overwrite was not selected" % (filename)

@@ -20,9 +20,11 @@ rinputfiles = glob.glob(os.path.join(caldir,"r*.fits"))
 binputfiles = glob.glob(os.path.join(caldir,"b*.fits"))
 grinputfiles = glob.glob(os.path.join(caldir,"r*.fits.gz"))
 gbinputfiles = glob.glob(os.path.join(caldir,"b*.fits.gz"))
+lrinputfiles = glob.glob(os.path.join(caldir,"lred*.fits"))
+lbinputfiles = glob.glob(os.path.join(caldir,"lblue*.fits"))
 
 
-inputfiles = binputfiles + rinputfiles + gbinputfiles + grinputfiles
+inputfiles = binputfiles + rinputfiles + gbinputfiles + grinputfiles + lbinputfiles + lrinputfiles
 
 if len(inputfiles) < 1:
     print "no input FITS files"
