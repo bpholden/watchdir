@@ -4,6 +4,7 @@ They are called:
 
 test_run_spec.py
 test_run_sens.py
+test_setup.py
 
 Run them, read the output carefully.
 *****
