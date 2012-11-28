@@ -23,7 +23,8 @@ end
 
 ;-----------------------------------------------------------------------
 pro lris_throughput_grating_plots, params, fig_time, $
-  OUTDIR=outdir, VERBOSE=verbose, CLOBBER=clobber
+                                   OUTDIR=outdir, VERBOSE=verbose, CLOBBER=clobber, $
+                                   MAX_EFFICIENCY=max_efficiency
 ;-----------------------------------------------------------------------
 ; Purpose:
 ;       generate plots and data tables of zero points and efficiencies
@@ -53,23 +54,37 @@ for i=0,nfiles-1 do begin
     root = strmid( params[i].infile, istrt+1, iend-istrt-1)
     params[i].dataset = root
 
+
+    ;; copy infile to output dir.
+    outfile = OUTDIR+"/" + params[i].dataset + ".fits"
+    if ~ file_test( outfile) then FILE_COPY,params[i].infile, outfile
+
     ;; generate PNG filenames...
     extn = '.png'
-    params[i].fig_zp_pix = OUTDIR+'/ZPPIX_'+root+extn
-    params[i].fig_zp_ang = OUTDIR+'/ZPANG_'+root+extn
-    params[i].fig_eff   = OUTDIR+'/EFF_'+root+extn
+    ;; params[i].fig_zp_pix = OUTDIR+'/ZPPIX_'+root+extn
+    ;; params[i].fig_zp_ang = OUTDIR+'/ZPANG_'+root+extn
+    ;; params[i].fig_eff   = OUTDIR+'/EFF_'+root+extn
+    params[i].fig_zp_pix = 'ZPPIX_'+root+extn
+    params[i].fig_zp_ang = 'ZPANG_'+root+extn
+    params[i].fig_eff   = 'EFF_'+root+extn
 
     ;; generate PDF filenames...
     extn = '.pdf'
-    params[i].fig_zp_pix_pdf = OUTDIR+'/ZPPIX_'+root+extn
-    params[i].fig_zp_ang_pdf = OUTDIR+'/ZPANG_'+root+extn
-    params[i].fig_eff_pdf   = OUTDIR+'/EFF_'+root+extn
+    ;; params[i].fig_zp_pix_pdf = OUTDIR+'/ZPPIX_'+root+extn
+    ;; params[i].fig_zp_ang_pdf = OUTDIR+'/ZPANG_'+root+extn
+    ;; params[i].fig_eff_pdf   = OUTDIR+'/EFF_'+root+extn
+    params[i].fig_zp_pix_pdf = 'ZPPIX_'+root+extn
+    params[i].fig_zp_ang_pdf = 'ZPANG_'+root+extn
+    params[i].fig_eff_pdf   = 'EFF_'+root+extn
 
     ;; generate table names...
     extn = '.txt'
-    params[i].tab_zp_pix = OUTDIR+'/ZPPIX_'+root+extn
-    params[i].tab_zp_ang = OUTDIR+'/ZPANG_'+root+extn
-    params[i].tab_eff   = OUTDIR+'/EFF_'+root+extn
+    ;; params[i].tab_zp_pix = OUTDIR+'/ZPPIX_'+root+extn
+    ;; params[i].tab_zp_ang = OUTDIR+'/ZPANG_'+root+extn
+    ;; params[i].tab_eff   = OUTDIR+'/EFF_'+root+extn
+    params[i].tab_zp_pix = 'ZPPIX_'+root+extn
+    params[i].tab_zp_ang = 'ZPANG_'+root+extn
+    params[i].tab_eff   = 'EFF_'+root+extn
 
     ;; store useful stuff...
     params[i].date       = meta.date
@@ -82,7 +97,7 @@ for i=0,nfiles-1 do begin
     params[i].grating    = strtrim(meta.grating,2)
     params[i].cenlam     = stringify(round(meta.central_wave))
     params[i].slit_width = meta.slit_width
-    params[i].conditions = meta.conditions
+;    params[i].conditions = meta.conditions
 
     ;; measure efficiency.  NOTE: can't pass params[i] by reference,
     ;; so to get values back we must copy element [i] into a temporary
@@ -100,9 +115,11 @@ for i=0,nfiles-1 do begin
     ;;----------------------------------------
     ;; zp pixel plot...
     ;;----------------------------------------
+    pngfile = OUTDIR + '/' + params[i].fig_zp_pix
+    pdffile = OUTDIR + '/' + params[i].fig_zp_pix_pdf
     if (keyword_set(CLOBBER) || $
-        ~ file_test(params[i].fig_zp_pix) || $
-        ~ file_test(params[i].fig_zp_pix_pdf)) then begin
+        ~ file_test(pngfile) || $
+        ~ file_test(pdffile)) then begin
         psfile = mktemp(template)
         psland, psfile
         DEVICE, SET_FONT='Helvetica', /TT_FONT  
@@ -119,8 +136,8 @@ for i=0,nfiles-1 do begin
         id, font=0
         device, /close
         ps2other, psfile, $
-                  png=params[i].fig_zp_pix, $
-                  pdf=params[i].fig_zp_pix_pdf, $
+                  png=pngfile, $
+                  pdf=pdffile, $
                   verbose=verbose, /delete
     endif else begin
         if keyword_set(VERBOSE) then begin
@@ -131,9 +148,12 @@ for i=0,nfiles-1 do begin
     ;;----------------------------------------
     ;; zp ang plot...
     ;;----------------------------------------
+    pngfile = OUTDIR + '/' + params[i].fig_zp_ang
+    pdffile = OUTDIR + '/' + params[i].fig_zp_ang_pdf
+
     if (keyword_set(CLOBBER) || $
-        ~ file_test(params[i].fig_zp_ang) || $
-        ~ file_test(params[i].fig_zp_ang_pdf)) then begin
+        ~ file_test(pngfile) || $
+        ~ file_test(pdffile)) then begin
         psfile = mktemp(template)
         psland, psfile
         DEVICE, SET_FONT='Helvetica', /TT_FONT  
@@ -150,8 +170,8 @@ for i=0,nfiles-1 do begin
         id, font=0
         device, /close
         ps2other, psfile, $
-                  png=params[i].fig_zp_ang, $
-                  pdf=params[i].fig_zp_ang_pdf, $
+                  png=pngfile, $
+                  pdf=pdffile, $
                   verbose=verbose, /delete
     endif else begin
         if keyword_set(VERBOSE) then begin
@@ -162,15 +182,21 @@ for i=0,nfiles-1 do begin
     ;;----------------------------------------
     ;; efficiency plot...
     ;;----------------------------------------
+    eff_min = min(thru_str.eff, max=eff_max)
+    eff_max = 1.05*eff_max
+    IF n_elements(max_efficiency) GT 0 THEN eff_max=max_efficiency
+
+    pngfile = OUTDIR + '/' + params[i].fig_eff
+    pdffile = OUTDIR + '/' + params[i].fig_eff_pdf
     if (keyword_set(CLOBBER) || $
-        ~ file_test(params[i].fig_eff) || $
-        ~ file_test(params[i].fig_eff_pdf)) then begin
+        ~ file_test(pngfile) || $
+        ~ file_test(pdffile)) then begin
         psfile = mktemp(template)
         psland, psfile
         DEVICE, SET_FONT='Helvetica', /TT_FONT  
         DEVICE, /ISOLATIN1
         xrng = [min(thru_str.wav, max=xmax), xmax]
-        yrng = [min(thru_str.eff, max=ymax), ymax*1.05]
+        yrng = [eff_min, eff_max]
         plot, thru_str.wav, thru_str.eff, xrange=xrng, $
               yrange=yrng, $
               charsize=csize, $
@@ -201,8 +227,8 @@ for i=0,nfiles-1 do begin
 
         device, /close
         ps2other, psfile, $
-                  png=params[i].fig_eff, $
-                  pdf=params[i].fig_eff_pdf, $
+                  png=pngfile, $
+                  pdf=pdffile, $
                   verbose=verbose, /delete
     endif else begin
         if keyword_set(VERBOSE) then begin
@@ -213,24 +239,30 @@ for i=0,nfiles-1 do begin
     ;;----------------------------------------
     ;; save tables...
     ;;----------------------------------------
-    if (keyword_set(CLOBBER) || ~file_test( params[i].tab_zp_pix)) then begin
-        write_table, params[i].tab_zp_pix, thru_str.wav, thru_str.zp_pix
+    tabfile = OUTDIR + '/' + params[i].tab_zp_pix
+
+    if (keyword_set(CLOBBER) || ~file_test( tabfile)) then begin
+        write_table,tabfile, thru_str.wav, thru_str.zp_pix
     endif else begin
         if keyword_set(VERBOSE) then begin
             message, root+' tab_zp_pix plots exist; skipping', /info
         endif 
     endelse 
 
-    if (keyword_set(CLOBBER) || ~file_test( params[i].tab_zp_ang)) then begin
-        write_table, params[i].tab_zp_ang, thru_str.wav, thru_str.zp_ang
+    tabfile = OUTDIR + '/' + params[i].tab_zp_ang
+
+    if (keyword_set(CLOBBER) || ~file_test( tabfile)) then begin
+        write_table, tabfile, thru_str.wav, thru_str.zp_ang
     endif else begin
         if keyword_set(VERBOSE) then begin
             message, root+' tab_zp_ang plots exist; skipping', /info
         endif 
     endelse 
 
-    if (keyword_set(CLOBBER) || ~file_test( params[i].tab_eff)) then begin
-        write_table, params[i].tab_eff,    thru_str.wav, thru_str.eff
+    tabfile = OUTDIR + '/' + params[i].tab_eff
+
+    if (keyword_set(CLOBBER) || ~file_test( tabfile)) then begin
+        write_table, tabfile,    thru_str.wav, thru_str.eff
     endif else begin
         if keyword_set(VERBOSE) then begin
             message, root+' tab_eff plots exist; skipping', /info

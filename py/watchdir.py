@@ -6,7 +6,6 @@ import glob
 import Frameutil
 import Planutil
 import LRISFrameutil
-import XIDLLongPlanutil
 import pyfits
 import numpy
 import os, os.path
@@ -54,7 +53,7 @@ parser = optparse.OptionParser(description='Watch a directory for LRIS standard 
 parser.add_option('-w','--watchdir', dest='watchdir', action='store',type="string",default=".",
                    help='Directory to watch for standard observations')
 parser.add_option('-s','--stddir', dest='stddir', action='store',type="string",default=lris_thru,
-                   help='Parent directory of output of longreduce')
+                   help='Parent directory of output of longreduce, the data reduction will be done in a subdirectory of this directory')
 parser.add_option('-k','--kroot', dest='kroot', action='store',type="string",default='/kroot/starlists/',
                    help='Starlist parent directory')
 parser.add_option('-t','--starlist', dest='starlist', action='store',type="string",default='0000_Throughput_standards.list',

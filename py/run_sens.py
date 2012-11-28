@@ -5,7 +5,6 @@ import glob
 import Frameutil
 import Planutil
 import LRISFrameutil
-import XIDLLongPlanutil
 import pyfits
 import numpy
 import os, os.path
@@ -52,14 +51,14 @@ def select_spec(frame,hdu):
 
 def lrissenstd_str(stdfile,stdframe,spec):
 
-    sens_str = 'echo "lris_sensstd,'
+    sens_str = '$IDL_DIR/bin/idl -e "lris_sensstd,'
     sens_str += "'%s'" % (stdfile)
     sens_str += ', CLOBBER=1,'
     if stdframe.instrument.name == "lrisblue":
         sens_str += " STD_OBJ=%d" % (spec)
     else:
         sens_str += " STD_OBJ=%d" % (spec)
-    sens_str += '" | $IDL_DIR/bin/idl >& sens.log'
+    sens_str += '" >& sens.log'
     sens_str += "\n"
 
     return(sens_str)
@@ -88,15 +87,18 @@ def run_sensstd(plan,datapath,idlenv):
     try:
         hdu = pyfits.open(stdfile)
         sens_str = lrissenstd_str(stdfile,stdframe,select_spec(stdframe,hdu))
-        executable = writesens_str(plan,datapath,sens_str,idlenv)
+        # executable = writesens_str(plan,datapath,sens_str,idlenv)
 
-        cwd = os.path.dirname(executable)
+        cwd = os.path.dirname(stdfile)
         outputfile = open(os.path.join(cwd,'sensprocessoutput'),"wb")
         erroroutputfile = open(os.path.join(cwd,'sensprocesserroroutput'),"wb")
 
-        curproc = subprocess.Popen(executable,
-                                   cwd=cwd,stdout=outputfile,
-                                   stderr=erroroutputfile)
+        curproc = subprocess.Popen(sens_str,
+                                   cwd=cwd,
+                                   stdout=outputfile,
+                                   stderr=erroroutputfile,
+                                   shell=True
+            )
         curproc.wait()
 
     except IOError:

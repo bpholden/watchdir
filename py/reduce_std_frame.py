@@ -6,7 +6,6 @@ import glob
 import Frameutil
 import Planutil
 import LRISFrameutil
-import XIDLLongPlanutil
 import pyfits
 import numpy
 import os, os.path

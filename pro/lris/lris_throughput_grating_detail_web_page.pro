@@ -109,10 +109,10 @@ body += '<td>Filter</td>'
 body += '<td>'+params.blocking+'</td>'
 body += '</tr>'
 
-body += '<tr>'
-body += '<td>Slit Width [arcsec]</td>'
-body += '<td>'+stringify(params.slit_width)+'</td>'
-body += '</tr>'
+;body += '<tr>'
+;body += '<td>Slit Width [arcsec]</td>'
+;body += '<td>'+stringify(params.slit_width)+'</td>'
+;body += '</tr>'
 
 body += '<tr>'
 body += '<td>Airmass</td>'
@@ -124,9 +124,19 @@ body += '<td>SpecBin</td>'
 body += '<td>'+params.spec_bin+'</td>'
 body += '</tr>'
 
+;body += '<tr>'
+;body += '<td>Conditions</td>'
+;body += '<td>'+params.conditions+'</td>'
+;body += '</tr>'
+
 body += '<tr>'
-body += '<td>Conditions</td>'
-body += '<td>'+params.conditions+'</td>'
+body += '<td>Comments</td>'
+body += '<td>'+params.comments+'</td>'
+body += '</tr>'
+
+body += '<tr>'
+body += '<td>Review</td>'
+body += '<td>'+params.review+'</td>'
 body += '</tr>'
 
 body += '</tbody>'
@@ -173,10 +183,10 @@ body += '<td><a href="'+params.tab_zp_ang+'">download ASCII</a></td>'
 body += '<td><a href="'+params.tab_zp_pix+'">download ASCII</a></td>'
 body += '</tr>'
 
-;; ascii...
+;; FITS...
 body += '<tr>'
 body += '<td>FITS Binary Table</td>'
-body += '<td colspan="3"><a href="'+params.infile+'">download FITS</a></td>'
+body += '<td colspan="3"><a href="'+params.dataset+'.fits">download FITS</a></td>'
 body += '</tr>'
 
 body += '</tbody>'

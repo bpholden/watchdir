@@ -87,6 +87,7 @@ body += '<th rowspan="2">Grism/Grating</th>'
 body += '<th rowspan="2">Filter</th>'
 body += '<th rowspan="2">&lambda;<sub>c</sub><br>[&Aring;]</th>'
 body += '<th colspan="'+stringify(n_cenlam)+'">Efficiency(&lambda;) [%]</th>'
+body += '<th rowspan="2">Review</th>'
 body += '</tr>'
 
 ;; label the efficiencies...
@@ -116,6 +117,7 @@ for i=0,n-1 do begin
         endelse 
         body += '<td class="right">'+label+'</td>'
     endfor 
+    body += '<td>'+params[i].review+'</td>'
     body += '</tr>'
 endfor 
 

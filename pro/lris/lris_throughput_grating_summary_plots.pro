@@ -2,7 +2,8 @@
 pro lris_throughput_grating_summary_plots, params, summary, $
   OUTDIR=outdir, $
   CLOBBER=clobber, $
-  VERBOSE=verbose
+  VERBOSE=verbose, $
+  MAX_EFFICIENCY=max_efficiency
 ;-----------------------------------------------------------------------
 
 ;; declarations...
@@ -77,6 +78,8 @@ for i=0,n_cenlam_uniq-1 do begin
         eff_max = max( [eff_max, ymaxval])
     endelse 
 
+    IF n_elements(max_efficiency) GT 0 THEN eff_max=max_efficiency
+
     ;; determine pixel spacing...
     npix = n_elements(thru_str.wav)
     dw_temp = thru_str.wav[1:npix-1] - thru_str.wav[0:npix-2]
@@ -130,6 +133,9 @@ plot, wav, eff, $
       title=title, font=0, $
       xmargin=[2,1], ymargin=[1,1]
 
+write_table,summary.efficiency_current_tab,wav,eff
+mwrfits,{wav:wav, eff:eff}, summary.efficiency_current_bintab
+
 ;; add lines to plot...
 for i=0,n_cenlam_uniq-1 do begin
     j = keepers[i]
@@ -152,6 +158,7 @@ ps2other, psfile, $
 ;; compute extrema...
 time_min = min(params.jd, max=time_max, /nan)
 eff_min  = min(params.efficiency, max=eff_max, /nan)
+IF n_elements(max_efficiency) GT 0 THEN eff_max=max_efficiency
 
 ;; define date labels...
 dummy = LABEL_DATE(DATE_FORMAT=['%Y']) 
@@ -208,5 +215,25 @@ ps2other, psfile, $
           png=summary.eff_vs_time_plot, $
           pdf=summary.eff_vs_time_pdf, $
           verbose=verbose, /delete
+
+;; now rewrite filenames w/o path info, for building webpages.
+root = 'eff_vs_time'
+summary.eff_vs_time_bintab = root + '.fits'
+summary.eff_vs_time_pdf    = root + '.pdf'
+summary.eff_vs_time_plot   = root + '.png'
+summary.eff_vs_time_tab    = root + '.txt'
+
+root = 'eff_vs_wave'
+summary.eff_vs_wavelength_bintab = root + '.fits'
+summary.eff_vs_wavelength_pdf    = root + '.pdf'
+summary.eff_vs_wavelength_plot   = root + '.png'
+summary.eff_vs_wavelength_tab    = root + '.txt'
+
+root = 'eff_latest'
+summary.efficiency_current_bintab = root + '.fits'
+summary.efficiency_current_pdf    = root + '.pdf'
+summary.efficiency_current_plot   = root + '.png'
+summary.efficiency_current_tab    = root + '.txt'
+
 
 end

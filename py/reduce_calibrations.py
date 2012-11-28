@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 import os, re, glob, os.path, subprocess, sys, stat
 from model import Frame, Instrument
-import XIDLLongPlanutil
+import Planutil
 import optparse
 
 def find_dirs(filelist):
@@ -175,7 +175,7 @@ def write_plan(dir,calibs):
         for fitsfile in fitsfiles:
             for calib in calibs:
                 if calib.name in fitsfile:
-                    line = XIDLLongPlanutil.genframestr(calib,calib.instrument.name)
+                    line = Planutil.genXIDLframestr(calib,calib.instrument.name)
                     planfile.write(line)
 
         planfile.close()

@@ -68,10 +68,11 @@ pro lris_throughput_web_pages, CLOBBER=clobber, TEST=test
 
 ;; specify set of wavelengths at which to measure change over time,
 ;; plus an array of widths and an array to hold measurements...
-lambda_eff = [4000, 5000., 7000., 8500., 9500.]
-dlambda_eff = [500, 500., 500., 500., 500.]
+lambda_eff = [3500, 4000, 5000., 7000., 8500., 9500.]
+dlambda_eff = [300, 500, 500., 500., 500., 500.]
 efficiency = fltarr(n_elements(lambda_eff))
-STOP
+max_efficiency = 0.5
+;; STOP
 ;; build list of directories...
 rootoutdir = getenv('LRIS_WEB')
 caldir = getenv('LRIS_THRU')
@@ -115,7 +116,9 @@ foo = {PARAMS, infile:'', $
        grating:'', $
        cenlam:'', $
        slit_width:0., $
-       conditions:'', $
+;       conditions:'', $
+       comments:'', $
+       review:'', $
        lambda_eff:lambda_eff, $
        dlambda_eff:dlambda_eff, $
        efficiency:efficiency }
@@ -133,6 +136,12 @@ summary = { efficiency_current_plot:'', $
             eff_vs_time_pdf:'', $
             eff_vs_time_tab:'', $
             eff_vs_time_bintab:''}
+
+;; define structure for summary...
+master = { blue_fig_eff:'', $
+           red_low_fig_eff:'', $
+           red_six_fig_eff:'', $
+           red_high_fig_eff:''}
 
 ;; loop over directories (gratings)...
 ng = 0
@@ -191,7 +200,7 @@ for i=0,ndirs-1 do begin
 
     ;; generate plots...
     lris_throughput_grating_plots, params, fig_time, OUTDIR=outdir, $
-      CLOBBER=clobber
+      CLOBBER=clobber, MAX_EFFICIENCY=max_efficiency
 
     ;; generate detail pages...
     extn = '.html'
@@ -211,12 +220,15 @@ for i=0,ndirs-1 do begin
             message, 'creating detail page '+outfile, /in
         endif
         lris_throughput_grating_detail_web_page, params[jj]
+        params[jj].detail = dataset + extn ;; make later links relative, now that the file has been made in an absolute position
+
     endfor
 
     ;; generate plots for grating summary...
     lris_throughput_grating_summary_plots, params, summary, $
-      OUTDIR=outdir, $
-      CLOBBER=clobber
+                                           OUTDIR=outdir, $
+                                           CLOBBER=clobber, $
+                                           MAX_EFFICIENCY=max_efficiency
 
     ;; generate grating summary page...
     extn = '.html'
@@ -248,6 +260,9 @@ endif
 outfile = rootoutdir +'/index.html'
 gratings = subdirs[fulldirs]
 href = subdirs[fulldirs] + '/doc/index.html'
-lris_throughput_master_web_page, outfile, gratings, href
+lris_throughput_master_grating_plots, rootoutdir, gratings, master, $
+                                      MAX_EFFICIENCY=max_efficiency
+lris_throughput_master_web_page, outfile, gratings, $
+                                 href, rootoutdir, master
 
 end

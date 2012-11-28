@@ -6,7 +6,6 @@ import glob
 import Frameutil
 import Planutil
 import LRISFrameutil
-import XIDLLongPlanutil
 import pyfits
 import numpy
 import os, os.path
@@ -21,7 +20,8 @@ import stat
 def prep_pipelines():
 
     xidlpipe = Pipeline(display_name="XIDL for LRIS",
-                        runstr=u'echo \"long_reduce,\'%s\'" | $IDL_DIR/bin/idl  > & longreduce.log\n',
+                        # runstr=u'echo \"long_reduce,\'%s\'" | $IDL_DIR/bin/idl  > & longreduce.log\n',
+                        runstr='idl -e long_reduce',
                         instrument = [],
                         framelist = "Object Line IntFlat Flat DmFlat Trace"
         )

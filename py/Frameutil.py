@@ -143,7 +143,7 @@ def ingestframe(filename,path,datapath,flag=dict(redo=False)):
 
     this routine takes a file  and does the appropriate shuffling to
     move the file to the correct place in the filesystem
-    the destination in the datapath value + Standards + date + longreduce
+    the destination in the datapath value +  date + framename
     
     """
     msg = ""

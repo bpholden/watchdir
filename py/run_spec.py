@@ -4,8 +4,6 @@ import time
 import glob
 import Frameutil
 import Planutil
-import LRISFrameutil
-import XIDLLongPlanutil
 import pyfits
 import numpy
 import os, os.path
@@ -16,6 +14,8 @@ import sys
 import optparse
 import stat
 import gzip
+import shlex
+
 
 def speccopy(inputname,outputname):
     """ cpgunzip(inputname, outputname)
@@ -32,21 +32,22 @@ def speccopy(inputname,outputname):
         if os.path.isfile(inputname) and not os.path.isfile(outputname):
             fin = gzip.open(inputname,"rb")
         else:
-            return(False)
+            msg = "Output %s exists" % outputname
+            return(False,msg)
         try:
             fout = open(outputname,"wb")
             fout.writelines(fin)
             fout.close()
             fin.close()
         except:
-            return(False)
+            return(False,"Cannot write output %s" % outputname)
     else :
         try:
             os.link(inputname,outputname)
         except:
-            return(False)
+            return(False,"Cannot link output %s" % outputname)
 
-    return(True)
+    return(True,"")
     
 def linkreduced(calib,plan,prefix,datapath):
     reducedname = prefix + calib.name
@@ -57,7 +58,8 @@ def linkreduced(calib,plan,prefix,datapath):
     finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
 
     if os.path.isfile(fullreducedname) :
-        if speccopy(fullreducedname,finalreducedname):
+        retval,msg = speccopy(fullreducedname,finalreducedname)
+        if retval:
             if match:
                 reducedname = re.sub("\.fits(.gz)?",".sav",reducedname)
                 fullreducedname =  os.path.join(calib.path,reducedname) # current location
@@ -65,14 +67,14 @@ def linkreduced(calib,plan,prefix,datapath):
                 if os.path.isfile(fullreducedname) and not os.path.isfile(finalreducedname) :
                     os.link(fullreducedname,finalreducedname)
                 else:
-                    print "%s already exists" % finalreducedname
+                    msg = "%s already exists" % finalreducedname
         else:
-            return(False)
+            return(False,msg)
     else:
-        return(False)
+        return(False,"No file %s" % fullreducedname)
 
 
-    return(True)
+    return(True,msg)
 
 def matchframe(frame,calib):
     if calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
@@ -96,8 +98,8 @@ def find_calibframes(frame,plan,calibs,datapath):
     
     """
 
-    msg = ""
-    matchs = []
+    finalmsg = ""
+    matches = []
     flats = []
     arcs = []
     for calib in calibs:
@@ -106,25 +108,29 @@ def find_calibframes(frame,plan,calibs,datapath):
             # check to see if the arc frame has been processed already, if so place processed file in
             # output directory
             # unprocessed frames are done automatically in Planutils
-            linkreduced(calib,plan,"wave-",datapath)
+            retval,msg = linkreduced(calib,plan,"wave-",datapath)
+            if not retval:
+                finalmsg += msg
                 
         elif calib.type == "IntFlat" and matchframe(frame,calib):
             flats.append(calib)
-            linkreduced(calib,plan,"slits-",datapath)
-            linkreduced(calib,plan,"pixflat-",datapath)
-            linkreduced(calib,plan,"illumflat-",datapath)
+            prefixes = ["slits-","pixflat-","illumflat-"]
+            for prefix in prefixes:
+                retval,msg = linkreduced(calib,plan,prefix,datapath)
+                if not retval:
+                    finalmsg += msg
 
     if len(flats):
-        matchs += flats
+        matches += flats
     else:
         msg = "No flats for frame %s" % (frame.display_name)
     if len(arcs):
-        matchs += arcs
+        matches += arcs
     else :
-        msg = msg  + "\n" + "No arcs for frame %s" % (frame.display_name)
+        finalmsg = finalmsg  + "\n" + "No arcs for frame %s" % (frame.display_name)
 
         
-    return(matchs,msg)
+    return(matches,finalmsg)
 
 
 def find_pipeline(frame,pipelines):
@@ -197,25 +203,34 @@ def genplanflags(plan):
                 flagsd[key]=value
 
 
-    flags = XIDLLongPlanutil.dicttostr(flagsd)
+    flags = Planutil.dicttostr(flagsd)
     return(flags)
 
-def writeplan(plan,datapath,idlenv):
-    plan.runstr = genplanflags(plan) # for "legacy" reasons the additional flags for the idl procedure long_reduce are stored in the runstr of plan
-    # This will make it into a form that can be parsed by Planutil.genrunstr()
-    Planutil.writeplan(plan,datapath)
-    runpath = os.path.join(datapath,plan.finalpath, plan.display_name+".csh")
-    executable = Planutil.writerunstr(runpath,datapath,Planutil.genrunstr(plan,datapath),idlenv)
 
+    
+
+
+def writeplan(plan,datapath,idlenv):
+    plan.runstr = genplanflags(plan) # for "legacy" reasons the additional flags for the idl
+                                     # procedure long_reduce are stored in the runstr of plan
+                                     # This will make it into a form that can be parsed by Planutil.genrunstr()
+    Planutil.writeplan(plan,datapath)
+    runpath = os.path.join(datapath,plan.finalpath, plan.display_name)
+    if os.path.isfile(runpath):
+        os.remove(runpath)
+    # executable = Planutil.writerunstr(runpath,datapath,Planutil.genrunstr(plan,datapath),idlenv)
+    executable = Planutil.XIDLmodrunstr(plan,datapath)
     plan.started=datetime.datetime.now()
     plan.finished=None
     plan.setstatus(1)
 
-    return(executable)
+    return executable
 
 def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag):
 
     # first, we parse the input file and make the frame instance
+    # remember, this copies the file from the current location (watchdir)
+    # to the final directory which is stddir/ + date_str/ + filename/ 
     msg,frame= Frameutil.ingestframe(os.path.basename(filename),watchdir,stddir,flag)
     if not frame:
         return(False,msg,False)
@@ -232,7 +247,8 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     # given an acceptable frame, we make the plan file
     pipeline = find_pipeline(frame,pipelines)
     pipeflags(frame,pipeline)
-    planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
+    #    planname = re.sub(r"\.fit(s?)",r".plan",os.path.basename(filename))
+    planname = "plan.par"
     plan = Planutil.buildplan(frame,planname,stddir,pipeline,flag)
     plan.frames.append(frame)
     # now we use the calib file list in the calib directory
@@ -242,20 +258,31 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     # directory
     calframes,msg = find_calibframes(frame,plan,calibs,stddir)
     if not calframes or len(calframes) == 0:
-        if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
-            os.remove(os.path.join(stddir,os.path.basename(filename)))
+        if os.path.isfile(os.path.join(stddir,plan.finalpath,os.path.basename(filename))):
+            os.remove(os.path.join(stddir,plan.finalpath,os.path.basename(filename)))
         return(False,msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
-    plan = Planutil.updateplandata(plan,frame,stddir)
-    executable = writeplan(plan,stddir,idlenv)
+    plan = Planutil.updateplandata(plan,stddir)
+    runstr = writeplan(plan,stddir,idlenv)
+    executable = shlex.split(runstr)
     # actually run the pipeline
-    cwd = os.path.dirname(executable)
-    outputfile = open(os.path.join(cwd,'processoutput'),"wb")
-    erroroutputfile = open(os.path.join(cwd,'processerroroutput'),"wb")
+    cwd = os.path.join(stddir,plan.finalpath)
+    outputfile = open(os.path.join(cwd,'longreduce.log'),"wb")
     print "executable:",executable
-    curproc = subprocess.Popen(executable,
-                               cwd=cwd,stdout=outputfile,
-                               stderr=erroroutputfile)
+    curproc = None
+    try:
+        curproc = subprocess.call(executable,
+            cwd=cwd,
+            stdout=outputfile,
+            stderr=outputfile,
+            shell=False
+            )
+        curproc.wait()
+        
+    except OSError as e:
+        msg = "%s" % e.strerror
+    except IOError as e:
+        msg = "%s" % e.strerror
 
     return(curproc,msg,plan)

@@ -25,7 +25,7 @@
 ; COMMENTS:
 ;
 ; EXAMPLES:
-;   esi_echrdxstd, esi
+;   lris_sensstd, lris
 ;
 ;
 ; PROCEDURES/FUNCTIONS CALLED:
@@ -238,11 +238,16 @@ pro lris_sensstd, std_fil, CLOBBER=clobber, CONDITIONS=conditions, $
   endfor
 
   bad = where(allsens < 0)
-  MSK[bad] = 0
-  idx = where(MSK, nwv) 
-  allwv = allwv[idx]
-  allsens = 1./allsens[idx]
-  allsens2 = 1./allsens2[idx]
+  if size(bad,/DIMENSIONS) GT 0 then begin
+     MSK[bad] = 0
+     idx = where(MSK, nwv) 
+     allwv = allwv[idx]
+     allsens = 1./allsens[idx]
+     allsens2 = 1./allsens2[idx]
+  endif else begin
+     allsens = 1./allsens
+     allsens2 = 1./allsens2
+  endelse
 
   ;; Convert to AB
   allsens = -2.5*alog10(allsens) - 48.6

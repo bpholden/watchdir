@@ -67,12 +67,10 @@ class Plan(object):
 
     def setstatus(self,status=0):
         self.status = status
-        self.update()
+
 
         return(self)
 
-    def update(self):
-        return(self)
 
 
 class Frame(object):

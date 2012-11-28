@@ -124,7 +124,7 @@ foo = {PARAMS, infile:'', $
        grating:'', $
        cenlam:'', $
        slit_width:0., $
-       conditions:'', $
+;       conditions:'', $
        lambda_eff:lambda_eff, $
        dlambda_eff:dlambda_eff, $
        efficiency:efficiency }
