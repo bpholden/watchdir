@@ -18,7 +18,7 @@ import shlex
 
 
 def speccopy(inputname,outputname):
-    """ cpgunzip(inputname, outputname)
+    """ speccopy(inputname, outputname)
     this copies a gziped inputname to an uncompressed output name.
     """
     zipped = re.search("\.gz",inputname) # Is the file gzip'ed.  If it is, we need to check if the reduced cals are gzip'ed.
@@ -50,6 +50,13 @@ def speccopy(inputname,outputname):
     return(True,"")
     
 def linkreduced(calib,plan,prefix,datapath):
+    """This routine takes a selected calibration and a prefix, and puts it in the
+    output data reduction directory, using a hard link. It copies both the raw file
+    and the reduced file.
+
+    There are four prefix's (wave, slit, illumflat, pixflat) but the wave is special
+    as the .sav file along with the .fits.gz file must be copied.
+    """
     reducedname = prefix + calib.name
 
     match = re.match("wave",prefix)       # If this is a arc line file, we need to copy both the wave-blah.fits and the wave-blah.sav
@@ -77,6 +84,10 @@ def linkreduced(calib,plan,prefix,datapath):
     return(True,msg)
 
 def matchframe(frame,calib):
+    """Given a calibration frame and a data frame, this checks to see if they match.
+    The requirements are on grating, binning and central wavelength. The latter is always the same
+    for the blue side of LRIS or Kast, so grism and binning are compared.
+    """
     if calib.grating == frame.grating and abs( float(frame.wavelength) - float(calib.wavelength)) < 20 \
     and calib.instrument.name == frame.instrument.name and calib.xbinning == frame.xbinning and calib.ybinning == frame.ybinning:
         return(True)
@@ -134,7 +145,9 @@ def find_calibframes(frame,plan,calibs,datapath):
 
 
 def find_pipeline(frame,pipelines):
-
+    """This routine checks the frame instrument and compares it with the list of pipelines.
+    It looks for a pipeline that supports that instrument and returns the pipeline.
+    """
     pipeline = ""
     for pipeline in pipelines:
         if type(pipeline.instrument) is types.ListType:
@@ -146,22 +159,27 @@ def find_pipeline(frame,pipelines):
                 return(pipeline)
     return(None)
 
-def find_if_okstar(fobject,stars):
-
+def find_if_okstar(ftarget,stars):
+    """This checks to see if the target is in the list of stars.
+    """
     msg = ''
     matched = False
     for star in stars:
-        # match = re.search(star.upper(),fobject.upper())
-        match = (star.upper() == fobject.upper())
+        # match = re.search(star.upper(),ftarget.upper())
+        match = (star.upper() == ftarget.upper())
         if match:
             matched = True
     if not matched:
-        msg = 'Frame observed %s which is not in star list' % fobject
+        msg = 'Frame observed %s which is not in star list' % ftarget
 
 
     return(msg)
 
 def check_if_std_frame(frame,stars):
+    """This looks at the frame and checks two things.
+    First, was the frame taken in direct (or slitless) mode.
+    Second, is the observed target in the list of stars provided.
+    """
 
     msg = ''
     # first check the aperture
@@ -178,6 +196,7 @@ def pipeflags(frame,pipeline):
     """ pipeflags(frame,pipeline)
 
     This adds pipeline specific plan flags.
+    
     
     """
     if pipeline.display_name ==  "XIDL for LRIS":
@@ -211,29 +230,51 @@ def genplanflags(plan):
 
 
 def writeplan(plan,datapath,idlenv):
+    """ Given a plan object, the datapath and the string containing the csh with
+    the idl environment variables, this writes out the data reduction plan
+    and returns the string neccessary to execute the idl code.
+    
+    """
+
     plan.runstr = genplanflags(plan) # for "legacy" reasons the additional flags for the idl
                                      # procedure long_reduce are stored in the runstr of plan
                                      # This will make it into a form that can be parsed by Planutil.genrunstr()
+                                     #
     Planutil.writeplan(plan,datapath)
     runpath = os.path.join(datapath,plan.finalpath, plan.display_name)
     if os.path.isfile(runpath):
         os.remove(runpath)
     # executable = Planutil.writerunstr(runpath,datapath,Planutil.genrunstr(plan,datapath),idlenv)
+    runstr = 'source %s;' % idlenv
     executable = Planutil.XIDLmodrunstr(plan,datapath)
+    runstr += executable
     plan.started=datetime.datetime.now()
     plan.finished=None
     plan.setstatus(1)
-
-    return executable
+    
+    return runstr
 
 def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag):
+    """This does what it name says. It requires a filename for a standard image,
+    the directory that image lives in, the output directory, a list of pipelines, calibration
+    frames, a starlist, a filename for a csh script containing the IDL env information
+    and a dictionary of flags.
+
+    This copies the file into the appropiate output directory. It checks the file to
+    see if it is a standard star observation and the star is in the starlist. It checks to see
+    if a pipeline that can proccess the file is in the pipline list. Then, it finds the appropriate
+    calibration frames, builds the final data reduction plan and executes it.
+
+    The routine returns the run data reduction plan and a message string. If the plan is False,
+    then the routine failed, the message string should return an error. Otherwise, the string is empty.
+    """
 
     # first, we parse the input file and make the frame instance
     # remember, this copies the file from the current location (watchdir)
     # to the final directory which is stddir/ + date_str/ + filename/ 
     msg,frame= Frameutil.ingestframe(os.path.basename(filename),watchdir,stddir,flag)
     if not frame:
-        return(False,msg,False)
+        return(msg,False)
 
     # second, we check to see if the input file is in the allowed list
     msg = check_if_std_frame(frame,stars)
@@ -241,7 +282,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
         # crap - at this point we have already moved the to stddir
         if os.path.isfile(os.path.join(stddir,os.path.basename(filename))):
             os.remove(os.path.join(stddir,os.path.basename(filename)))
-        return(False,msg,False)
+        return(msg,False)
 
 
     # given an acceptable frame, we make the plan file
@@ -260,29 +301,28 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     if not calframes or len(calframes) == 0:
         if os.path.isfile(os.path.join(stddir,plan.finalpath,os.path.basename(filename))):
             os.remove(os.path.join(stddir,plan.finalpath,os.path.basename(filename)))
-        return(False,msg,False)        
+        return(msg,False)        
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
     plan = Planutil.updateplandata(plan,stddir)
     runstr = writeplan(plan,stddir,idlenv)
-    executable = shlex.split(runstr)
+    # executable = shlex.split(runstr)
     # actually run the pipeline
     cwd = os.path.join(stddir,plan.finalpath)
     outputfile = open(os.path.join(cwd,'longreduce.log'),"wb")
-    print "executable:",executable
     curproc = None
     try:
-        curproc = subprocess.call(executable,
+        curproc = subprocess.call(runstr,
             cwd=cwd,
             stdout=outputfile,
             stderr=outputfile,
-            shell=False
+            shell=True
             )
-        curproc.wait()
+            # curproc.wait()
         
     except OSError as e:
         msg = "%s" % e.strerror
     except IOError as e:
         msg = "%s" % e.strerror
 
-    return(curproc,msg,plan)
+    return(msg,plan)

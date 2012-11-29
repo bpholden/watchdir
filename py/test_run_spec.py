@@ -141,14 +141,14 @@ else:
 # seventh
 print "7 - writeplan"                        
 executable = run_spec.writeplan(correctplan,os.getcwd(),idlenv)
-if executable == correct_executable and os.path.isfile(os.path.join(testdir,correct_planfile)):
+if correct_executable in executable and os.path.isfile(os.path.join(testdir,correct_planfile)):
 	print "Success in writeplan"
         cleanup_calfile(testcalfile,os.path.join(testdir,testfiledir))
 elif executable == correct_executable and not os.path.isfile(os.path.join(testdir,correct_planfile)): 
-	print "failure in writeplan, no planfile written, %s" % correctplan
+	print "FAILED in writeplan, no planfile written, %s" % correctplan
         cleanup_calfile(testcalfile,os.path.join(testdir,testfiledir))
 elif executable != correct_executable and os.path.isfile(os.path.join(testdir,correct_planfile)): 
-	print "failure in writeplan, wrong executable string, %s" % executable
+	print "FAILED in writeplan, wrong executable string, %s" % executable
         cleanup_calfile(testcalfile,os.path.join(testdir,testfiledir))
 else:
 	print "FAILED in writeplan"
@@ -156,8 +156,8 @@ else:
 # eight
 print "8 - buildandrunplan"   
 flag = dict(redo=True)
-curproc,msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
-if msg == '':
+msg,retplan = run_spec.buildandrunplan(testfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
+if msg == '' and os.path.isfile(os.path.join(testdir,retplan.finalpath,"longreduce.log")):
 	print "Success in buildandrunplan"
         cleanup_plandir(retplan,testfile,testdir)
 else:
@@ -165,13 +165,13 @@ else:
         cleanup_plandir(retplan,testfile,testdir)
 
 # nine
-curproc,msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv,flag)
+msg,retplan = run_spec.buildandrunplan("",testdir,testdir,pipes,calframes,stars,idlenv,flag)
 if retplan == False:
 	print "Success in buildandrunplan (bad frame) - Previous line should have a \"cannot open\" error"
 else:
 	print "FAILED in buildandrunplan (bad frame)", msg
 
-curproc,msg,retplan = run_spec.buildandrunplan(testcalfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
+msg,retplan = run_spec.buildandrunplan(testcalfile,testdir,testdir,pipes,calframes,stars,idlenv,flag)
 if retplan == False:
 	print "Success in buildandrunplan (not a std frame)"
 else:

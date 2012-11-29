@@ -66,9 +66,6 @@ parser.add_option('-l','--callist', dest='callist', action='store',
 parser.add_option('-i','--idlenv', dest='idlenv', action='store',
                    default="idlenv",type="string",
                    help='path to idlenv, file that contains all of the environment definitions required')
-parser.add_option('-m','--maxjobs', dest='maxjobs', action='store',
-                   default=1,type="int",
-                   help="Maximum number of jobs to run at once.")
 
 parser.add_option('-f','--file', dest='configfile', action='store',
                    default=None,type="string",
@@ -122,30 +119,24 @@ while True:
 
     # first stuff the queue
     # this ends when either the queue is full or the todo list is empty
-    while(numjobs < options.maxjobs and len(todolist)):
+    while(len(todolist)):
         logfile.write("New files found:\n")
         logfile.write(" ".join(todolist) + "\n")
         filename = todolist.pop()
         logfile.write("Starting %s\n" % filename)
         
-        newproc,msg,plan = run_spec.buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
-        if newproc:
-            proclist.append(newproc)
-            planlist.append(plan)
-            logfile.write("running pid = %d\n" % newproc.pid)
-            logfile.write("plan = %s at %s\n" % (plan.display_name,plan.finalpath) )
-            newname = re.sub(r'fits',r'running',filename)
-            newname += ".%d" % newproc.pid
+        msg,plan = run_spec.buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
+        if msg = '':
+            logfile.write("ran plan = %s at %s\n" % (plan.display_name,plan.finalpath) )
             donename = os.path.join(watchdir,"done",os.path.basename(filename))
             print filename, "=>" ,donename
             logfile.write("copying " + filename + " => " +donename + '\n')
             watchdir_setup.movetodone(filename,donename)
-            numjobs+=1
+            logfile.write("Running lris_senstd for %s at %s\n"  % (cplan.display_name,cplan.finalpath) )
+            msg = run_sens.run_sensstd(plan,stddir,idlenv)
+            print msg
+            logfile.write(msg+"\n")
 
-            pidfile = open(os.path.join(watchdir,newname),"w")
-            pidfile.write("")
-            pidfile.close()
-            print "Added %s\nNow %d jobs in the queue, can run %d" % (newname,numjobs, options.maxjobs)
         else:
             print msg
             print "%s appears to be have an issue, moving to done" % (filename)
@@ -157,32 +148,7 @@ while True:
             watchdir_setup.movetodone(filename,donename)
 
 
-        
 
-    # out of the loop now
-    # now we need to clean up done processes
-
-#    print proclist
-    for numproc, proc in enumerate(proclist):
-
-#        print "cleaning the queue", numjobs, options.maxjobs
-
-        if proc.poll() != None:
-            proclist.remove(proc)
-            pids = "%d" % proc.pid
-            cstr = "pid %d has finished" % (proc.pid)
-            files = glob.glob(watchdir + '/*.'+pids)
-            logfile.write(cstr+"\n")
-            if len(files) > 0:
-                filename = files[0]
-                cplan = planlist.pop(numproc)
-                print cstr
-                logfile.write("Running lris_senstd for %s at %s\n"  % (cplan.display_name,cplan.finalpath) )
-                msg = run_sens.run_sensstd(cplan,stddir,idlenv)
-                print msg
-                logfile.write(msg+"\n")
-                os.unlink(filename)
-            numjobs-=1
 
     #
     time.sleep(10)
