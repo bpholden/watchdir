@@ -53,8 +53,8 @@ def linkfiles(frame,plan,datapath):
     if os.path.isfile(inpath) and os.path.isdir(outpath) and not os.path.isfile(os.path.join(outpath,frame.display_name)):
         try:
             os.link(inpath,os.path.join(outpath,frame.display_name))
-        except IOError as e:
-            msg = "%s" % e.strerror
+	except:
+            msg = "error linking %s to %s" % (inpath,os.path.join(outpath,frame.display_name))
     return(msg)
 
 

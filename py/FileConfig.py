@@ -27,8 +27,8 @@ class FileConfig:
                             val = val[0]
                         setattr(self,key,val)
 
-        except Exception as e:
-            print e
+	except:
+		print "Error reading configuration file %s" % filename
     def __repr__(self):
         return '< FileConfig %s >' % (self.filename)
 

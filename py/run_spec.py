@@ -320,9 +320,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
             )
             # curproc.wait()
         
-    except OSError as e:
-        msg = "%s" % e.strerror
-    except IOError as e:
-        msg = "%s" % e.strerror
+    except :
+        msg = "Error running process %s" % (runstr)
 
     return(msg,plan)
