@@ -126,7 +126,7 @@ while True:
         logfile.write("Starting %s\n" % filename)
         
         msg,plan = run_spec.buildandrunplan(filename,watchdir,stddir,pipelist,calibs,stars,idlenv,flag)
-        if msg = '':
+        if msg == '':
             logfile.write("ran plan = %s at %s\n" % (plan.display_name,plan.finalpath) )
             donename = os.path.join(watchdir,"done",os.path.basename(filename))
             print filename, "=>" ,donename

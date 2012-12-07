@@ -63,9 +63,9 @@ print "4 - run_sensstd"
 msg = run_sens.run_sensstd(correctplan,cwd,idlenv)
 idloutput = os.path.isfile(os.path.join(cwd,correctplan.finalpath,"Science","sens.log"))
 
-if idloutput and msg == ""  :
+if idloutput and msg == "":
     print "Success in run_sensstd"
 else:
     print "FAILED in run_sensstd", msg
-cleanup_sensoutput(os.path.join(cwd,correctplan.finalpath,"Science")
 
+cleanup_sensoutput(os.path.join(cwd,correctplan.finalpath,"Science"))

@@ -13,6 +13,3 @@ caldir = . # this is the root directory of the calibration files
 callist = calibration.list # this is the list of calibration files which is located in the directory specified above
 idlenv = idlenv # a file that contains a csh set of definitions for IDL environment variables
 
-maxjobs = 1 # how many data reductions you want going on at once. the
-# limit is usual the amount of memory the computer has, not the amount
-# of CPU's
