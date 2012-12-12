@@ -64,5 +64,8 @@ processing.
 A file called "run_idl.csh". This file will be output in the directory specified by the -c option.
 This is a c shell script which is by default executable. 
 
+% cd /s/sdata243/lriseng/savior-protected/throughput/calibrations/ 
+% ./run_idl.csh
+
 
 --------------------
