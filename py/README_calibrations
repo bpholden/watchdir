@@ -1,20 +1,30 @@
 watchdir.py relies on a directory of calibrations. This is an argument
 to watchdir and inside that directory there must be a calibration file list.
 
+--------------------
+
 * make_filelist.py
 
 Default -c . -l calibration.list
 
-To generate the filelist, use the routine make_filelist.py.
-This routine requires two arguments, the imput directory of calibrations and the filename of the output.
+To generate the filelist, use the routine make_filelist.py.  This
+routine requires two arguments, the imput directory of calibrations
+and the filename of the output.
 
 % make_filelist.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/
 
-which will create the file calibration.list in the above directory
-To make a calibration list with a different name, use the -l option
+which will create the file calibration.list in the above directory To
+make a calibration list with a different name, use the -l option
 
 % make_filelist.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l new.list
 
+
+* Output:
+
+A calibration list with name specified by the -l option in the
+directory specified by the -c option.
+
+--------------------
 
 * prep_dirs.py
 
@@ -27,6 +37,13 @@ camera.
 
 % prep_dirs.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l calibration.list
 
+* Output:
+
+A set of subdirectories named as above with the root of the tree being
+the directory specified by the -c option.
+
+
+--------------------
 
 * reduce_calibrations.py
 
@@ -41,3 +58,11 @@ watchdir.py.  The script builds a csh script to automate the IDL
 processing.
 
 % reduce_calibrations.py -c /s/sdata243/lriseng/savior-protected/throughput/calibrations/ -l calibration.list
+
+* Output:
+
+A file called "run_idl.csh". This file will be output in the directory specified by the -c option.
+This is a c shell script which is by default executable. 
+
+
+--------------------
