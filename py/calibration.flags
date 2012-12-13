@@ -1,8 +1,8 @@
-150/7500 1 reid_file='lris_red_150_7500_bin1.sav',bin_ratio=1
-300/5000 1 reid_file='lris_red_300_5000_bin1.sav',bin_ratio=1
-600/5000 1 reid_file='lris_red_600_5000_bin1.sav',bin_ratio=1
-600/7500 1 reid_file='lris_red_600_7500_bin1.sav',bin_ratio=1
-600/10000 1 reid_file='lris_red_600_10000_bin1.sav',bin_ratio=1
-1200/7500 1 reid_file='lris_red_1200_7500_bin1.sav',bin_ratio=1
-831/8200 1 reid_file='lris_red_831_8200_bin1.sav',bin_ratio=1
-900/5500 1 reid_file='lris_red_900_5500_d560_Ar.sav',bin_ratio=1
+r 150/7500 1 reid_file='lris_red_150_7500_bin1.sav',bin_ratio=1
+r 300/5000 1 reid_file='lris_red_300_5000_bin1.sav',bin_ratio=1
+r 600/5000 1 reid_file='lris_red_600_5000_bin1.sav',bin_ratio=1
+r 600/7500 1 reid_file='lris_red_600_7500_bin1.sav',bin_ratio=1
+r 600/10000 1 reid_file='lris_red_600_10000_bin1.sav',bin_ratio=1
+r 1200/7500 1 reid_file='lris_red_1200_7500_bin1.sav',bin_ratio=1
+r 831/8200 1 reid_file='lris_red_831_8200_bin1.sav',bin_ratio=1
+r 900/5500 1 reid_file='lris_red_900_5500_d560_Ar.sav',bin_ratio=1

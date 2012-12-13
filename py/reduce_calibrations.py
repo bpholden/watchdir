@@ -12,7 +12,7 @@ def find_dirs(filelist):
     return(dirs)
 
 
-def makeplanflags(filename):
+def make_planflags(filename):
 
     planflags = dict()
     try:
@@ -23,16 +23,16 @@ def makeplanflags(filename):
 
     flagstrs = flagfile.read().splitlines()
     for fstr in flagstrs:
-        (grating,binning,flag) = fstr.split()
+        (camera,grating,binning,flag) = fstr.split()
         # let us assume the correct format
-        fkey = "%s %s"  % (grating,binning)
+        fkey = "%s %s %s"  % (camera,grating,binning)
         planflags[fkey] = flag
 
 
     return(planflags)
         
-def makecallist(callist,caldir):
-    """makecallist(callist, caldir)
+def make_callist(callist,caldir):
+    """make_callist(callist, caldir)
 
     This reads in the file specified as callist.
     The path must be absolute, or the routine will return False
@@ -108,7 +108,7 @@ def gen_planflags(dir,calibs,flagdict):
     """gen_planflags(directory, calib list, flag dictionary)
 
     This generates the flags for a data reduction plan.  It uses the
-    flag dictionary made in makeplanflags().  The dictionary keys by
+    flag dictionary made in make_planflags().  The dictionary keys by
     grating and binning in the y direction.  The function searches the
     directory (dir), and finds the fits files in the calibs list.  It
     then references the appropriate flags from the flagdict.
@@ -119,7 +119,11 @@ def gen_planflags(dir,calibs,flagdict):
     for fitsfile in fitsfiles:
         for calib in calibs:
             if calib.name in fitsfile:
-                fkey = "%s %s"  % (calib.grating,calib.ybinning)
+                if calib.instrument.name == 'lrisred':
+                    camera = "r"
+                else:
+                    camera = "b"
+                fkey = "%s %s %s"  % (camera,calib.grating,calib.ybinning)
                 if fkey in flagdict.keys():
                     planflags[fkey] = flagdict[fkey]
     return planflags
@@ -208,8 +212,8 @@ caldir = os.path.abspath(options.caldir) # get the absolute path - so we can use
 callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
 flagfile = os.path.abspath(os.path.join(options.caldir,options.flagfile)) # get the absolute path - so we can use this later for path manipulations
 
-calibs = makecallist(callist,caldir)
-flagdict = makeplanflags(flagfile)
+calibs = make_callist(callist,caldir)
+flagdict = make_planflags(flagfile)
 
 rdirs = find_dirs(glob.glob(os.path.join(caldir,"r*_*")))
 bdirs = find_dirs(glob.glob(os.path.join(caldir,"b*_*")))
@@ -226,6 +230,7 @@ idlrunfile = open(os.path.join(caldir,"run_idl.csh"),"w")
 for gdir in gdirs:
     cwd = os.path.join(".",gdir)
     nfiles = write_plan(gdir,calibs)
+    planflags = gen_planflags(gdir,calibs,flagdict)
     if nfiles:
         idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
     wdirs = glob.glob(gdir+"/w*")
