@@ -225,9 +225,9 @@ idlrunfile = open(os.path.join(caldir,"run_idl.csh"),"w")
 
 for gdir in gdirs:
     cwd = os.path.join(".",gdir)
-    #    nfiles = write_plan(gdir,calibs)
-    # if nfiles:
-    #    idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
+    nfiles = write_plan(gdir,calibs)
+    if nfiles:
+        idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
     wdirs = glob.glob(gdir+"/w*")
     for wdir in wdirs:
 #        execstr = 'echo \"long_plan\" | $IDL_DIR/bin/idl'
@@ -236,6 +236,7 @@ for gdir in gdirs:
         planflags = gen_planflags(wdir,calibs,flagdict)
         if nfiles:
             idlrunfile.writelines( gen_planrun(cwd,caldir,planflags))
+
     
 
 idlrunfile.close()
