@@ -68,7 +68,7 @@ parser.add_option('-i','--idlenv', dest='idlenv', action='store',
                    default="idlenv",type="string",
                    help='path to idlenv, file that contains all of the environment definitions required')
 parser.add_option('-g','--logfile',dest='logfilename', action='store',
-                  default="",type="string",
+                  default="watchdir.log",type="string",
                   help='filename of logfile, this logs watchdir messages and output')
 
 parser.add_option('-f','--file', dest='configfile', action='store',
