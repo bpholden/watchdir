@@ -37,7 +37,7 @@ def setup_options(options,fileconfig=None):
     callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
     starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
     idlenv = os.path.abspath(options.idlenv)
-    idlenv = os.path.abspath(options.logfilename)
+    logfilename = os.path.abspath(options.logfilename)
 
     
 
