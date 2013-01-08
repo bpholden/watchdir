@@ -316,6 +316,7 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
             cwd=cwd,
             stdout=outputfile,
             stderr=outputfile,
+            executable="/bin/tcsh",
             shell=True
             )
             # curproc.wait()

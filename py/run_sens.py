@@ -112,6 +112,7 @@ def run_sensstd(plan,datapath,idlenv):
                                    cwd=cwd,
                                    stdout=outputfile,
                                    stderr=erroroutputfile,
+                                   executable="/bin/tcsh",
                                    shell=True
             )
         curproc.wait()

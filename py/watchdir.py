@@ -37,10 +37,11 @@ def setup_options(options,fileconfig=None):
     callist = os.path.abspath(os.path.join(options.caldir,options.callist)) # get the absolute path - so we can use this later for path manipulations
     starlist = os.path.abspath(os.path.join(options.kroot,options.starlist)) # get the absolute path - so we can use this later for path manipulations
     idlenv = os.path.abspath(options.idlenv)
+    idlenv = os.path.abspath(options.logfilename)
 
     
 
-    return watchdir,stddir,caldir,callist,starlist,idlenv
+    return watchdir,stddir,caldir,callist,starlist,idlenv,logfilename
 
 
 # -- main 
@@ -66,6 +67,9 @@ parser.add_option('-l','--callist', dest='callist', action='store',
 parser.add_option('-i','--idlenv', dest='idlenv', action='store',
                    default="idlenv",type="string",
                    help='path to idlenv, file that contains all of the environment definitions required')
+parser.add_option('-g','--logfile',dest='logfilename', action='store',
+                  default="",type="string",
+                  help='filename of logfile, this logs watchdir messages and output')
 
 parser.add_option('-f','--file', dest='configfile', action='store',
                    default=None,type="string",
@@ -79,7 +83,7 @@ if options.configfile:
 else:
     fileconfig = None
     
-watchdir,stddir,caldir,callist,starlist,idlenv = setup_options(options,fileconfig)
+watchdir,stddir,caldir,callist,starlist,idlenv,logfilename = setup_options(options,fileconfig)
 
 # Now make the paths more useful
 
@@ -104,7 +108,7 @@ numjobs = 0
 proclist = []
 planlist = []
 
-logfile = watchdir_setup.startlog()
+logfile = watchdir_setup.startlog(logfilename=logfilename)
 
 logfile.write("watchdir = %s\n" % watchdir)
 logfile.write("stddir = %s\n" % stddir)
