@@ -9,4 +9,5 @@ starlist = 0000_Throughput_standards.list # the actual standard star list
 caldir = . # this is the root directory of the calibration files
 callist = calibration.list # this is the list of calibration files which is located in the directory specified above
 idlenv = idlenv # a file that contains a csh set of definitions for IDL environment variables
+logfilename = watchdir.log
 
