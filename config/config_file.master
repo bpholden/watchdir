@@ -1,0 +1,12 @@
+# this is a configuration file for watchdir.py
+# anything after a # is ignored
+# blank lines are ignored
+
+watchdir = . # the directory to watch for new files
+stddir = . # the output directory, where you want the reduced standards to go
+kroot =/kroot/starlists/ # where to look for the list of standards stars that are worth reducing
+starlist = 0000_Throughput_standards.list # the actual standard star list
+caldir = . # this is the root directory of the calibration files
+callist = calibration.list # this is the list of calibration files which is located in the directory specified above
+idlenv = idlenv # a file that contains a csh set of definitions for IDL environment variables
+

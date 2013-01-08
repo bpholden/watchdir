@@ -1,0 +1,35 @@
+#source /Applications/rsi/idl_6.3/bin/idl_setup
+# set the IDL directories.
+setenv IDL_DIR /Applications/rsi/idl
+setenv IDL_HELP_PATH $IDL_DIR/help
+
+# establish my IDL startup file.
+setenv IDL_STARTUP ~/.idlstartup
+
+setenv ASTIDLUTIL /Users/holden/idl
+# These IDL directories will likely differ for you...check with your system administrator.
+
+# clear the path.
+setenv IDL_PATH
+# add the base IDL library and examples to path.
+setenv IDL_PATH $IDL_PATH{:}+$IDL_DIR/lib
+setenv IDL_PATH $IDL_PATH{:}+$IDL_DIR/examples
+
+# add all cvs routines to path.
+# this includes both the UCB and SDSS routines, as IDL_PATH is searched recursively.
+#setenv IDL_PATH $IDL_PATH{:}+$ASTIDLUTIL
+
+# essential directories for DEIMOS analysis
+setenv IDLUTILS_DIR $ASTIDLUTIL/idlutils/
+setenv CALIB_DATA $ASTIDLUTIL/calib/
+setenv IDLSPEC2D_DIR $ASTIDLUTIL/idlspec2d/
+setenv XIDL_DIR $ASTIDLUTIL/xidl/
+setenv LONGSLIT_DIR $XIDL_DIR/Spec/Longslit/ 
+# setenv HIRES_CALIBS $ASTIDLUTIL/Keck/HIRES/CALIBS/
+# setenv ESI_CALIBS $ASTIDLUTIL/Keck/ESI/CALIBS/
+
+setenv IDL_PATH $IDL_PATH{:}+$IDLUTILS_DIR
+setenv IDL_PATH $IDL_PATH{:}+$IDLSPEC2D_DIR
+setenv IDL_PATH $IDL_PATH{:}+$XIDL_DIR
+setenv IDL_PATH $IDL_PATH{:}+$ASTIDLUTIL/coyote
+setenv IDL_PATH $IDL_PATH{:}+$ASTIDLUTIL/gdw
