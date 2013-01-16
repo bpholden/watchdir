@@ -301,7 +301,9 @@ def buildandrunplan(filename,watchdir,stddir,pipelines,calibs,stars,idlenv,flag)
     if not calframes or len(calframes) == 0:
         if os.path.isfile(os.path.join(stddir,plan.finalpath,os.path.basename(filename))):
             os.remove(os.path.join(stddir,plan.finalpath,os.path.basename(filename)))
-        return(msg,False)        
+        return(msg,False)
+    msg = "" # msg can be filled with information for find_calibframes that is not relevant
+             # I should make linkreduced smarter
     plan.frames += calframes
     # update with calibration data frames and write out the plan file
     plan = Planutil.updateplandata(plan,stddir)
