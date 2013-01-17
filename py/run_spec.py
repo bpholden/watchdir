@@ -48,7 +48,25 @@ def speccopy(inputname,outputname):
             return(False,"Cannot link output %s" % outputname)
 
     return(True,"")
+
+
+def gratingdir(calib):
+    camera = ""
+    if calib.instrument.name == "lrisblue":
+        camera = "b"
+    elif calib.instrument.name == "lrisred":
+        camera = "r"
+
+    gname = "%s%s" % (camera,calib.grating)
+    gname = re.sub('/','_',gname)
+    wname = ''
+    if calib.wavelength:
+            wname = "w%.0f" % float(calib.wavelength)
+
+    return gname, wname
+        
     
+        
 def linkreduced(calib,plan,prefix,datapath):
     """This routine takes a selected calibration and a prefix, and puts it in the
     output data reduction directory, using a hard link. It copies both the raw file
@@ -60,28 +78,36 @@ def linkreduced(calib,plan,prefix,datapath):
     reducedname = prefix + calib.name
 
     match = re.match("wave",prefix)       # If this is a arc line file, we need to copy both the wave-blah.fits and the wave-blah.sav
-
-    fullreducedname =  os.path.join(calib.path,reducedname) # current location
+    gname,wname = gratingdir(calib)
+    gdir = gname
+    if wname:
+        gdir = os.path.join(gname,wname)
+    
+    topreducedname =  os.path.join(calib.path,reducedname) # current location
+    gratingreducedname =  os.path.join(calib.path,gdir,reducedname) # current location
     finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
 
-    if os.path.isfile(fullreducedname) :
-        retval,msg = speccopy(fullreducedname,finalreducedname)
-        if retval:
-            if match:
-                reducedname = re.sub("\.fits(.gz)?",".sav",reducedname)
-                fullreducedname =  os.path.join(calib.path,reducedname) # current location
-                finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
-                if os.path.isfile(fullreducedname) and not os.path.isfile(finalreducedname) :
-                    os.link(fullreducedname,finalreducedname)
-                else:
-                    msg = "%s already exists" % finalreducedname
+    found = False
+    for fullreducedname in (topreducedname,gratingreducedname):
+        if os.path.isfile(fullreducedname) :
+            found = True
+            retval,msg = speccopy(fullreducedname,finalreducedname)
+            if retval:
+                if match:
+                    reducedname = re.sub("\.fits(.gz)?",".sav",reducedname)
+                    fullreducedname =  os.path.join(calib.path,reducedname) # current location
+                    finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
+                    if os.path.isfile(fullreducedname) and not os.path.isfile(finalreducedname) :
+                        os.link(fullreducedname,finalreducedname)
+                    else:
+                        msg = "%s already exists" % finalreducedname
+            else:
+                return(False,msg)
         else:
-            return(False,msg)
-    else:
-        return(False,"No file %s" % fullreducedname)
+            msg = "No file %s" % fullreducedname
 
-
-    return(True,msg)
+    
+    return(found,msg)
 
 def matchframe(frame,calib):
     """Given a calibration frame and a data frame, this checks to see if they match.
