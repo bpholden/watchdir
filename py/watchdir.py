@@ -136,7 +136,7 @@ while True:
             print filename, "=>" ,donename
             logfile.write("copying " + filename + " => " +donename + '\n')
             watchdir_setup.movetodone(filename,donename)
-            logfile.write("Running lris_senstd for %s at %s\n"  % (cplan.display_name,cplan.finalpath) )
+            logfile.write("Running lris_senstd for %s at %s\n"  % (plan.display_name,plan.finalpath) )
             msg = run_sens.run_sensstd(plan,stddir,idlenv)
             print msg
             logfile.write(msg+"\n")
