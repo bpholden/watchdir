@@ -94,8 +94,9 @@ def linkreduced(calib,plan,prefix,datapath):
             retval,msg = speccopy(fullreducedname,finalreducedname)
             if retval:
                 if match:
-                    reducedname = re.sub("\.fits(.gz)?",".sav",reducedname)
-                    fullreducedname =  os.path.join(calib.path,reducedname) # current location
+                    fullreducedname = re.sub("\.fits(.gz)?",".sav",fullreducedname) # current location
+                    reducedname = re.sub("\.fits(.gz)?",".sav",reducedname) 
+
                     finalreducedname =  os.path.join(datapath,plan.finalpath,reducedname) # final location
                     if os.path.isfile(fullreducedname) and not os.path.isfile(finalreducedname) :
                         os.link(fullreducedname,finalreducedname)
