@@ -49,21 +49,33 @@ for inputfile in inputfiles:
     frametype = ""
     if hdr['LAMPS'] == "0,0,0,0,0,1":
         frametype = "IntFlat"
+    elif hdr['LAMPS'] == "0,0,0,0,0,0":
+        frametype = "Object"
     else:
         frametype = "Line"
 
     framegrating = ""
     framewavelength = "0"
     if re.match("LRISBLUE",instrument_hdr_val):
-        framegrating = hdr['GRISNAME']
+        if 'GRISNAME' in hdrkeys:
+            framegrating = hdr['GRISNAME']
+        else:
+            framegrating = 'nil'
     elif re.match("LRIS",instrument_hdr_val):
-        framegrating = hdr['GRANAME']
-        framewavelength = ("%0.1f" % hdr['WAVELEN'])
+        if 'GRANAME' in hdrkeys:
+            framegrating = hdr['GRANAME']
+        else:
+            framegrating = 'nil'
+        if 'WAVELEN' in hdrkeys:
+            framewavelength = ("%0.0f" % hdr['WAVELEN'])
+        else:
+            framewavelength = '-9999'
     if 'BINNING' in hdrkeys:
         xb,yb = hdr['BINNING'].split(",")
     inputfile = os.path.basename(inputfile)
+
     print inputfile, cam, frametype, framegrating, framewavelength,xb,yb
-    if cam:
+    if cam and frametype != 'Object':
         line = " ".join((inputfile, cam, frametype, framegrating, framewavelength,xb,yb,"\n"))
         outfile.write(line) 
 
